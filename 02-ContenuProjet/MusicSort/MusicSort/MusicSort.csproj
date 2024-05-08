@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F5A9C88B-5C72-4567-B01A-1785F2A8AB9C}</ProjectGuid>
+    <ProjectGuid>{A7A023E5-71BF-4BF9-9334-AA6AE6A60D0B}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>MusicSort</RootNamespace>
     <AssemblyName>MusicSort</AssemblyName>
@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -46,11 +47,58 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
+    <Compile Include="Controllers\Controller.cs" />
+    <Compile Include="Models\File.cs" />
+    <Compile Include="Models\Model.cs" />
+    <Compile Include="Views\FileItem.cs" />
+    <Compile Include="Views\FileRenamingForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Views\FileRenamingForm.Designer.cs">
+      <DependentUpon>FileRenamingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FolderBrowser.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Views\FolderBrowser.Designer.cs">
+      <DependentUpon>FolderBrowser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FolderFileItemMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Views\FolderFileItemMenu.Designer.cs">
+      <DependentUpon>FolderFileItemMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FolderFileListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Views\FolderFileListView.Designer.cs">
+      <DependentUpon>FolderFileListView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\misc.cs" />
+    <Compile Include="Views\PlaylistItemMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Views\PlaylistItemMenu.Designer.cs">
+      <DependentUpon>PlaylistItemMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PlaylistPlayer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Views\PlaylistPlayer.Designer.cs">
+      <DependentUpon>PlaylistPlayer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PlaylistView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Views\PlaylistView.Designer.cs">
+      <DependentUpon>PlaylistView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ViewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\ViewForm.Designer.cs">
+      <DependentUpon>ViewForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -62,7 +110,17 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Views\FileRenamingForm.resx">
+      <DependentUpon>FileRenamingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\PlaylistView.resx">
+      <DependentUpon>PlaylistView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ViewForm.resx">
+      <DependentUpon>ViewForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -75,6 +133,32 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="AxWMPLib">
+      <Guid>{6BF52A50-394A-11D3-B153-00C04F79FAA6}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>aximp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="WMPLib">
+      <Guid>{6BF52A50-394A-11D3-B153-00C04F79FAA6}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Images\FolderBrowser\drive-icon.png" />
+    <Content Include="Images\FolderBrowser\folder-icon.png" />
+    <Content Include="Images\FolderBrowser\music-file.png" />
+    <Content Include="Images\FolderBrowser\open-folder-icon.png" />
+    <Content Include="Images\FolderBrowser\selected-drive-icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
