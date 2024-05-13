@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MusicSort.Models;
 
 namespace MusicSort.Views
 {
@@ -54,11 +55,62 @@ namespace MusicSort.Views
             Name = "PlaylistView";
             Size = new Size(163, 268);
             UseCompatibleStateImageBehavior = false;
+            ListViewItemSorter = new PlaylistItemComparer();
+
+            Refresh();
         }
 
-        protected override void OnPaint(PaintEventArgs pe)
+        /// <summary>
+        /// Switches the sorting order of the list
+        /// </summary>
+        public void SwitchSortOrder()
         {
-            base.OnPaint(pe);
+            throw new NotImplementedException();
+        }
+        
+        /// <summary>
+        /// Sorts the files in the alphabetical order then return the files in the order found
+        /// </summary>
+        /// <returns>Files in alphabetical order</returns>
+        public File[] SortFiles()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Set the new files of the list
+        /// </summary>
+        /// <param name="files">files to set</param>
+        public void SetNewFiles(File[] files)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets the fileItems that represents the files given
+        /// </summary>
+        /// <param name="file">files to find the item corresponding to</param>
+        /// <returns>retunrs the fileitems corresponding to the files given</returns>
+        public FileItem[] GetFileItemsFromFiles(File[] file)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Class used to compare the files 
+        /// </summary>
+        private class PlaylistItemComparer : System.Collections.IComparer
+        {
+            /// <summary>
+            /// Comparation method
+            /// </summary>
+            /// <param name="x">first value to compare</param>
+            /// <param name="y">second value to compare</param>
+            /// <returns>result to give</returns>
+            public int Compare(object x, object y)
+            {
+                return Compare(((FileItem)x).File.IndexInPlaylist, ((FileItem)y).File.IndexInPlaylist);
+            }
         }
     }
 }

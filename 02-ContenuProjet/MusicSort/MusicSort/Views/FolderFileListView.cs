@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MusicSort.Models;
 
 namespace MusicSort.Views
 {
@@ -20,6 +21,41 @@ namespace MusicSort.Views
     /// </summary>
     public partial class FolderFileListView : ListView
     {
+        /// <summary>
+        /// Method to trigger when wanting to reset the file
+        /// </summary>
+        public DoActionHandler Reset { get; set; }
+
+        /// <summary>
+        /// Method to trigger when wanting place the file lower in the order
+        /// </summary>
+        public DoActionHandler Play { get; set; }
+
+        /// <summary>
+        /// Method to trigger when wanting rename the file
+        /// </summary>
+        public DoActionHandler Rename { get; set; }
+
+        /// <summary>
+        /// Method to trigger when wanting remove the file from the playlist
+        /// </summary>
+        public DoActionHandler RemoveFromPlaylist { get; set; }
+
+        /// <summary>
+        /// Method to trigger when wanting place the file higher in the order
+        /// </summary>
+        public DoActionHandler PlaceHigher { get; set; }
+
+        /// <summary>
+        /// Method to trigger when wanting place the file lower in the order
+        /// </summary>
+        public DoActionHandler PlaceLower { get; set; }
+
+        /// <summary>
+        /// Method to trigger when wanting to send the file to the playlist
+        /// </summary>
+        public DoActionHandler SendToPlaylist { get; set; }
+
         /// <summary>
         /// Column containing the information about the name of the file listed
         /// </summary>
@@ -54,11 +90,27 @@ namespace MusicSort.Views
             Name = "FolderFileListView";
             Size = new Size(163, 268);
             UseCompatibleStateImageBehavior = false;
+
+            Refresh();
         }
 
-        protected override void OnPaint(PaintEventArgs pe)
+        /// <summary>
+        /// Sets the new files of the folder
+        /// </summary>
+        /// <param name="files">new files to set</param>
+        public void SetNewFiles(File[] files)
         {
-            base.OnPaint(pe);
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets the fileitems corresponding to the files given
+        /// </summary>
+        /// <param name="files">Files to find to fileitems corresponding to</param>
+        /// <returns>returns the fileitems found</returns>
+        public FileItem[] GetFileItemsFromFiles(File[] files)
+        {
+            throw new NotImplementedException();
         }
     }
 }

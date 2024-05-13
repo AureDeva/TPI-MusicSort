@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MusicSort.Models;
 
 namespace MusicSort.Views
 {
@@ -21,6 +22,16 @@ namespace MusicSort.Views
     public partial class PlaylistPlayer : AxWMPLib.AxWindowsMediaPlayer
     {
         /// <summary>
+        /// Files to be played
+        /// </summary>
+        private File[] _filesToPlay;
+
+        /// <summary>
+        /// File currently being played
+        /// </summary>
+        public File CurrentlyPlayingFile { get; }
+
+        /// <summary>
         /// Constructs the instance of the class
         /// </summary>
         public PlaylistPlayer()
@@ -28,9 +39,31 @@ namespace MusicSort.Views
             InitializeComponent();
         }
 
-        protected override void OnPaint(PaintEventArgs pe)
+        /// <summary>
+        /// Starts playing a file
+        /// </summary>
+        /// <param name="file">File to play</param>
+        /// <returns>Returns if the operation was successful</returns>
+        public bool PlayFile(File file)
         {
-            base.OnPaint(pe);
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Starts playing a group of files
+        /// </summary>
+        /// <param name="files">Files to play</param>
+        public void PlayFiles(File[] files)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Stops playing anything
+        /// </summary>
+        public void StopPlaying()
+        {
+            throw new NotImplementedException();
         }
     }
 }

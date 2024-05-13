@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MusicSort.Controllers;
 
 namespace MusicSort.Views
 {
@@ -21,19 +22,24 @@ namespace MusicSort.Views
     public partial class ViewForm : Form
     {
         /// <summary>
+        /// Controller of the application
+        /// </summary>
+        public Controller Controller { get; set; }
+
+        /// <summary>
         /// Control allowing the user the browse the folders for one to select
         /// </summary>
-        public FolderBrowser FolderBrowser { get; private set; }
+        public FolderBrowser FolderBrowser { get => _folderBrowser; }
 
         /// <summary>
         /// Control allowing the user to view and interact with the files of the playlist
         /// </summary>
-        public PlaylistView PlaylistView { get; private set; }
+        public PlaylistView PlaylistView { get => _playlistView; }
 
         /// <summary>
         /// Control allowing the user to view and interact with the files retreived from the folder
         /// </summary>
-        public FolderFileListView FolderFileListView { get; private set; }
+        public FolderFileListView FolderFileListView { get => _folderFileListView; }
 
         /// <summary>
         /// Control used to listen to music
@@ -47,7 +53,7 @@ namespace MusicSort.Views
         {
             InitializeComponent();
 
-            Controls.Add(new FolderBrowser());
+            FolderBrowser.SetBaseDirectory();
         }
 
         /// <summary>
@@ -81,6 +87,215 @@ namespace MusicSort.Views
             //open a folder browser and return the path if one was selected
             using (FolderBrowserDialog browser = new FolderBrowserDialog() { Description = "Recherche de dossier d'images" })
                 return browser.ShowDialog() == DialogResult.OK ? browser.SelectedPath : null;
+        }
+        /// <summary>
+        /// Event triggered when the button to find the base directory is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void BaseDirectoryButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to add all files to the playlist is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void AddAllToPlaylistButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to add the selected files to the playlist is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void AddToPlaylistButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to remove the selected files from the playlist
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void RemoveFromPlaylistButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button the remove all files of the playlist
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void RemoveAllFromPlaylistButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to sort the playlist is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void SortButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to reset all is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void ResetAllButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to play the playlist is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void PlayButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to stop playing music is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void StopButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the check box of the numbering is checked or unchecked 
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void FileNumberingCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the text of the start number text box is changed
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void StartNumberTextBox_TextChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the text of the general name text box is changed
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void GeneralNameTextBox_TextChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the radio button of the rename mode is selected
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void RenameModeRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the radio button of the rename and copy mode is selected
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void RenameAndCopyModeRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the radio button of the rename and move mode is selected
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void RenameAndMoveModeRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to chose a destination is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void DestinationButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to display the changes is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void DisplayButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to apply the changes is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void ApplyButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when a folder is selected in the browser
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void FolderBrowser_FolderSelectedEvent(object sender, string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to place the file higher is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void PlaceUpButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Event triggered when the button to place the file lower is clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void PlaceDownButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }
