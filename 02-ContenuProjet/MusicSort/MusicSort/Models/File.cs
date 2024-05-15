@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace MusicSort.Models
 {
@@ -24,27 +25,27 @@ namespace MusicSort.Models
         /// <summary>
         /// Getter of the real extension of the file
         /// </summary>
-        public string RealExtension { get => throw new NotImplementedException(); }
+        public string RealExtension { get => System.IO.Path.GetExtension(FullRealPath).TrimStart('.'); }
 
         /// <summary>
         /// Getter of the real name of the file
         /// </summary>
-        public string RealName { get => throw new NotImplementedException(); }
+        public string RealName { get => System.IO.Path.GetFileNameWithoutExtension(FullRealPath); }
 
         /// <summary>
         /// Getter of the real path of the file
         /// </summary>
-        public string RealPath { get => throw new NotImplementedException(); }
+        public string RealPath { get => System.IO.Path.GetDirectoryName(FullRealPath); }
 
         /// <summary>
         /// Getter of the name to display in the interface
         /// </summary>
-        public string DisplayName { get => throw new NotImplementedException(); }
+        public string DisplayName { get => Prefix + CustomName; }
 
         /// <summary>
         /// Getter of the full custom name of the file
         /// </summary>
-        public string FullCustomName { get => throw new NotImplementedException(); }
+        public string FullCustomName { get => CustomPath + '\\' + Prefix + CustomName + '.' + RealExtension; }
 
         /// <summary>
         /// Custom name of the file (not the name of the real file) without the extension and path
@@ -114,7 +115,19 @@ namespace MusicSort.Models
         /// <returns>Returns if the operation was successful</returns>
         public bool SetNewName(string name)
         {
-            throw new NotImplementedException();
+            //verify validity
+            //test the name is valid
+            if(!name.Any(c => Path.GetInvalidFileNameChars().Contains(c)) || name.Length <= 255)
+            {
+                //test if the name would still be unique
+                if (!(System.IO.File.Exists(CustomPath + '\\' + name + '.' + RealExtension) || name == CustomName))
+                {
+                    CustomName = name;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

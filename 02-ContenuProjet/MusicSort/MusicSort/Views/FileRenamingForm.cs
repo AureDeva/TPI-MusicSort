@@ -85,7 +85,7 @@ namespace MusicSort.Views
                 ApplyButton.Enabled = false;
             }
             //test if the name could be used in the folder
-            else if (System.IO.File.Exists(File.CustomPath + newName) && newName != File.CustomName)
+            else if (System.IO.File.Exists(File.CustomPath + '\\' + newName + '.' + File.RealExtension) && newName != File.CustomName)
             {
                 ErrorLabel.Text = "Un fichier avec ce nom existe déja dans le dossier cible.";
                 ApplyButton.Enabled = false;

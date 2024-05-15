@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MusicSort.Controllers;
+using MusicSort.Models;
 
 namespace MusicSort.Views
 {
@@ -54,6 +55,120 @@ namespace MusicSort.Views
             InitializeComponent();
 
             FolderBrowser.SetBaseDirectory();
+            PlaylistView.ColumnClick += (e, arg) => Controller.SwitchSortingOrder();
+            PlaylistView.ItemSelectionChanged += PlaylistView_ItemSelectionChanged;
+        }
+
+        /// <summary>
+        /// Event triggered when the selection of items changes
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void PlaylistView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+            selectedFileLabel.Text = ((FileItem)e.Item).File.DisplayName;
+        }
+
+        /// <summary>
+        /// Ask a new name for the file from the user
+        /// </summary>
+        /// <param name="file">file renaming</param>
+        /// <returns>new name</returns>
+        public string AskForNewName(File file)
+        {
+            //open the renaming form
+            FileRenamingForm form = new FileRenamingForm(file);
+            DialogResult result = form.ShowDialog();
+
+            if (result == DialogResult.Yes)
+                return form.NewName;
+            else
+                return null;
+        }
+
+        /// <summary>
+        /// Set the fileItems of the folder list view
+        /// </summary>
+        /// <param name="files">Files to set</param>
+        public void SetFileItemsForFolderListView(File[] files)
+        {
+            //items to set for the folder list view
+            List<FileItem> fileItems = new List<FileItem>();
+
+            FolderFileListView.Items.Clear();
+
+            //create the items
+            foreach (File file in files)
+            {
+                fileItems.Add(
+                        new FileItem(
+                            file,
+                            Controller.ResetFile,
+                            Controller.ListenToFile,
+                            Controller.RenameFile,
+                            new DoActionHandler(f => Controller.RemoveFilesFromPlaylist(new File[] { f })),
+                            new DoActionHandler(f => Controller.PlaceFilesHigher(new File[] { f })),
+                            new DoActionHandler(f => Controller.PlaceFilesLower(new File[] { f })),
+                            new DoActionHandler(f => Controller.SendFilesToPlaylist(new File[] { f }))
+                            )
+                        );
+            }
+
+            FolderFileListView.Items.AddRange(fileItems.ToArray());
+        }
+
+        /// <summary>
+        /// Add new FileItems to the playlist
+        /// </summary>
+        /// <param name="files">files to add as items</param>
+        public void SetFileItemsForPlaylistView(File[] files) 
+        {
+            //items to set for the playlist view
+            List<FileItem> fileItemsToRemove = new List<FileItem>();
+
+            //create the items that are missing in the playlist
+            foreach (File file in files)
+            {
+                bool isMissing = true;
+
+                //test if the fileitem is already there
+                foreach (FileItem item in PlaylistView.Items)
+                    if (item.File == file)
+                        isMissing = false;
+
+                //add the file item
+                if (isMissing)
+                    PlaylistView.Items.Add(
+                        new FileItem(
+                            file,
+                            Controller.ResetFile,
+                            Controller.ListenToFile,
+                            Controller.RenameFile,
+                            new DoActionHandler(f => Controller.RemoveFilesFromPlaylist(new File[] { f })),
+                            new DoActionHandler(f => Controller.PlaceFilesHigher(new File[] { f })),
+                            new DoActionHandler(f => Controller.PlaceFilesLower(new File[] { f })),
+                            new DoActionHandler(f => Controller.SendFilesToPlaylist(new File[] { f }))
+                            )
+                        );
+            }
+
+            //remove the unwanted fileItems
+            foreach (FileItem item in PlaylistView.Items)
+            {
+                bool inPlaylist = false;
+
+                //find if there is a corresponding file
+                foreach (File file in files)
+                    if (item.File == file)
+                        inPlaylist = true;
+
+                if (!inPlaylist)
+                    fileItemsToRemove.Add(item);
+            }
+
+            //remove the fileItems
+            foreach (FileItem item in fileItemsToRemove)
+                PlaylistView.Items.Remove(item);
         }
 
         /// <summary>
@@ -95,7 +210,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void BaseDirectoryButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.SelectDirectory();
         }
 
         /// <summary>
@@ -105,7 +220,14 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void AddAllToPlaylistButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //files to send to playlist
+            List<File> files = new List<File>();
+
+            //find the items
+            foreach (FileItem item in FolderFileListView.Items)
+                files.Add(item.File);
+
+            Controller.SendFilesToPlaylist(files.ToArray());
         }
 
         /// <summary>
@@ -115,7 +237,14 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void AddToPlaylistButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //files to send to playlist
+            List<File> files = new List<File>();
+
+            //find the selected items
+            foreach (FileItem item in FolderFileListView.SelectedItems)
+                files.Add(item.File);
+
+            Controller.SendFilesToPlaylist(files.ToArray());
         }
 
         /// <summary>
@@ -125,7 +254,14 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void RemoveFromPlaylistButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //files to send to playlist
+            List<File> files = new List<File>();
+
+            //find the selected items
+            foreach (FileItem item in PlaylistView.SelectedItems)
+                files.Add(item.File);
+
+            Controller.RemoveFilesFromPlaylist(files.ToArray());
         }
 
         /// <summary>
@@ -135,7 +271,14 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void RemoveAllFromPlaylistButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //files to send to playlist
+            List<File> files = new List<File>();
+
+            //find the selected items
+            foreach (FileItem item in PlaylistView.Items)
+                files.Add(item.File);
+
+            Controller.RemoveFilesFromPlaylist(files.ToArray());
         }
 
         /// <summary>
@@ -145,7 +288,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void SortButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.SortPlaylist();
         }
 
         /// <summary>
@@ -155,7 +298,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void ResetAllButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.ResetAll();
         }
 
         /// <summary>
@@ -165,7 +308,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void PlayButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.StartPlaylist();
         }
 
         /// <summary>
@@ -175,7 +318,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void StopButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.StopPlaylist();
         }
 
         /// <summary>
@@ -185,7 +328,12 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void FileNumberingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //test if the box was checked
+            if (((CheckBox)sender).Checked)
+                Controller.ActivateNumbering();
+            //if the box was unchecked
+            else
+                Controller.DeactivateNumbering();
         }
 
         /// <summary>
@@ -195,7 +343,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void StartNumberTextBox_TextChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.InputNewNumber(((TextBox)sender).Text);
         }
 
         /// <summary>
@@ -205,7 +353,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void GeneralNameTextBox_TextChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.InputNewGeneralName(((TextBox)sender).Text);
         }
 
         /// <summary>
@@ -215,7 +363,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void RenameModeRadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.ChangeApplicationMode(ApplicationMode.Rename);
         }
 
         /// <summary>
@@ -225,7 +373,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void RenameAndCopyModeRadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.ChangeApplicationMode(ApplicationMode.RenameAndCopy);
         }
 
         /// <summary>
@@ -235,7 +383,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void RenameAndMoveModeRadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.ChangeApplicationMode(ApplicationMode.RenameAndMove);
         }
 
         /// <summary>
@@ -245,7 +393,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void DestinationButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.SearchForDestinationDirectory();
         }
 
         /// <summary>
@@ -255,7 +403,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void DisplayButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.DisplayGeneralChanges();
         }
 
         /// <summary>
@@ -265,7 +413,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void ApplyButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            Controller.Apply();
         }
 
         /// <summary>
@@ -275,7 +423,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void FolderBrowser_FolderSelectedEvent(object sender, string path)
         {
-            throw new NotImplementedException();
+            Controller.DirectorySelected(path);
         }
 
         /// <summary>
@@ -285,7 +433,14 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void PlaceUpButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //files to send to place higher
+            List<File> files = new List<File>();
+
+            //find the selected items
+            foreach (FileItem item in PlaylistView.SelectedItems)
+                files.Add(item.File);
+
+            Controller.PlaceFilesHigher(files.ToArray());
         }
 
         /// <summary>
@@ -295,7 +450,14 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void PlaceDownButton_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            //files to send to place higher
+            List<File> files = new List<File>();
+
+            //find the selected items
+            foreach (FileItem item in PlaylistView.SelectedItems)
+                files.Add(item.File);
+
+            Controller.PlaceFilesLower(files.ToArray());
         }
     }
 }

@@ -22,6 +22,11 @@ namespace MusicSort.Views
     public partial class PlaylistView : ListView
     {
         /// <summary>
+        /// Method to trigger when wanting play the file
+        /// </summary>
+        public DoActionHandler Play { get; set; }
+
+        /// <summary>
         /// Column containing the information about the name of the file listed
         /// </summary>
         private ColumnHeader _nameColumn;
@@ -32,32 +37,81 @@ namespace MusicSort.Views
         private ColumnHeader _extensionColumn;
 
         /// <summary>
+        /// Comparer of the items
+        /// </summary>
+        private PlaylistItemComparer _comparer;
+
+        /// <summary>
         /// Cosntruct the instance of the class
         /// </summary>
         public PlaylistView()
         {
             InitializeComponent();
 
-            _nameColumn = new ColumnHeader();
-            _extensionColumn = new ColumnHeader();
-
-            // NameColumn
-            _nameColumn.Text = "Nom";
-
-            // ExtensionColumn
-            _extensionColumn.Text = "Extension";
-
             // PlaylistView
-            Columns.AddRange(new ColumnHeader[] {
-            _nameColumn,
-            _extensionColumn});
-            Location = new Point(89, 82);
+            Location = new Point(0,0);
             Name = "PlaylistView";
-            Size = new Size(163, 268);
+            Size = new Size(210, 350);
             UseCompatibleStateImageBehavior = false;
-            ListViewItemSorter = new PlaylistItemComparer();
+            _comparer = new PlaylistItemComparer();
+            ListViewItemSorter = _comparer;
+            Sorting = SortOrder.Ascending;
+
+            View = View.Details;
+            Scrollable = true;
+
+            _nameColumn = new ColumnHeader()
+            {
+                Width = Size.Width / 3 * 2,
+                Text = "Nom"
+            };
+            _extensionColumn = new ColumnHeader()
+            {
+                Width = Size.Width / 3 - (Size.Width % 3 * 3),
+                Text = "Extension"
+            };
+
+            Columns.Add(_nameColumn);
+            Columns.Add(_extensionColumn);
+
+            MouseClick += PlaylistView_MouseClick;
+            MouseDoubleClick += PlaylistView_MouseDoubleClick;
 
             Refresh();
+        }
+
+        /// <summary>
+        /// Event triggered when the user clicks the ListView
+        /// </summary>
+        /// <param name="sender">Object triggering the event</param>
+        /// <param name="e">Arguments of the event</param>
+        private void PlaylistView_MouseClick(object sender, MouseEventArgs e)
+        {
+            //test if the event was for a right click and if it is a file item
+            if (e.Button == MouseButtons.Right && GetItemAt(e.X, e.Y) is FileItem)
+            {
+                //find the clicked item and show its menu
+                ((FileItem)GetItemAt(e.X, e.Y))?.PlaylistMenu.Show(this, e.Location);
+            }
+        }
+
+        /// <summary>
+        /// Event triggered when double clicking the list view
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void PlaylistView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            //test if item clicked was of FileItem type
+            if (GetItemAt(e.X, e.Y) is FileItem)
+            {
+                //detect if an item was double clicked
+                if ((FileItem)GetItemAt(e.X, e.Y) != null)
+                {
+                    FileItem item = (FileItem)GetItemAt(e.X, e.Y);
+                    Play(item.File);
+                }
+            }
         }
 
         /// <summary>
@@ -65,35 +119,41 @@ namespace MusicSort.Views
         /// </summary>
         public void SwitchSortOrder()
         {
-            throw new NotImplementedException();
-        }
-        
-        /// <summary>
-        /// Sorts the files in the alphabetical order then return the files in the order found
-        /// </summary>
-        /// <returns>Files in alphabetical order</returns>
-        public File[] SortFiles()
-        {
-            throw new NotImplementedException();
-        }
+            //test if the sorting is done in a descending order
+            if (Sorting == SortOrder.Descending)
+            {
+                Sorting = SortOrder.Ascending;
+                _comparer.IsSortingAscending = true;
+            }
+            //test if the sorting is done in a ascending order
+            else if (Sorting == SortOrder.Ascending)
+            {
+                Sorting = SortOrder.Descending;
+                _comparer.IsSortingAscending = false;
+            }
 
-        /// <summary>
-        /// Set the new files of the list
-        /// </summary>
-        /// <param name="files">files to set</param>
-        public void SetNewFiles(File[] files)
-        {
-            throw new NotImplementedException();
+            Sort();
         }
 
         /// <summary>
         /// Gets the fileItems that represents the files given
         /// </summary>
-        /// <param name="file">files to find the item corresponding to</param>
+        /// <param name="files">files to find the item corresponding to</param>
         /// <returns>retunrs the fileitems corresponding to the files given</returns>
-        public FileItem[] GetFileItemsFromFiles(File[] file)
+        public FileItem[] GetFileItemsFromFiles(File[] files)
         {
-            throw new NotImplementedException();
+            //list of items to returns
+            List<FileItem> items = new List<FileItem>();
+
+            //go through the files
+            foreach (File file in files)
+                //go through the items
+                foreach (FileItem item in Items)
+                    //test if it is the right item
+                    if (item.File == file)
+                        items.Add(item);
+
+            return items.ToArray();
         }
 
         /// <summary>
@@ -102,6 +162,11 @@ namespace MusicSort.Views
         private class PlaylistItemComparer : System.Collections.IComparer
         {
             /// <summary>
+            /// Tells what order should thing be sorted
+            /// </summary>
+            public bool IsSortingAscending { get; set; } = true;
+
+            /// <summary>
             /// Comparation method
             /// </summary>
             /// <param name="x">first value to compare</param>
@@ -109,7 +174,14 @@ namespace MusicSort.Views
             /// <returns>result to give</returns>
             public int Compare(object x, object y)
             {
-                return Compare(((FileItem)x).File.IndexInPlaylist, ((FileItem)y).File.IndexInPlaylist);
+                FileItem x_ = (FileItem)x;
+                FileItem y_ = (FileItem)y;
+
+                if (IsSortingAscending)
+                    return x_.File.IndexInPlaylist.CompareTo(y_.File.IndexInPlaylist);
+                else
+                    return y_.File.IndexInPlaylist.CompareTo(x_.File.IndexInPlaylist);
+                //return Compare(x_.File.IndexInPlaylist, y_.File.IndexInPlaylist);
             }
         }
     }

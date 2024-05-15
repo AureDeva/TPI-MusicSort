@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MusicSort.Controllers;
+using System.IO;
+using System.Windows.Forms;
 
 namespace MusicSort.Models
 {
@@ -17,10 +19,16 @@ namespace MusicSort.Models
     /// </summary>
     public class Model
     {
+
         /// <summary>
         /// Tells if the number prefix is activated
         /// </summary>
         private bool _isPrefixActivated;
+
+        /// <summary>
+        /// File types supported by the applicatiom
+        /// </summary>
+        public string[] SupportedTypes { get; }
 
         /// <summary>
         /// Controller of the application
@@ -40,7 +48,7 @@ namespace MusicSort.Models
         /// <summary>
         /// Path of the directory currently selected for file selection
         /// </summary>
-        public string SelectedPath { get; private set; }
+        public string SelectedPath { get; set; }
 
         /// <summary>
         /// General name given to all files of the playlist
@@ -90,6 +98,35 @@ namespace MusicSort.Models
             StartNumber = 0;
             _isPrefixActivated = false;
             ApplicationMode = ApplicationMode.Rename;
+            SupportedTypes = new string[] { "mp3", "wma", "flac"};
+        }
+
+        /// <summary>
+        /// Sorts the files alphabeticaly
+        /// </summary>
+        public void SortFiles()
+        {
+            //sort the list
+            Playlist.Sort((f1, f2) => f1.CustomName.CompareTo(f2.CustomName));
+
+            //update the indexes
+            for (int i = 0; i < Playlist.Count; i++)
+                Playlist[i].IndexInPlaylist = i;
+        }
+
+        /// <summary>
+        /// Finds a file wich has the given index
+        /// </summary>
+        /// <param name="index">index of the file to find</param>
+        /// <returns>File found</returns>
+        public File FindFileByIndex(int index)
+        {
+            //find the file
+            foreach (File file in Playlist)
+                if (file.IndexInPlaylist == index)
+                    return file;
+
+            return null;
         }
 
         /// <summary>
@@ -103,24 +140,34 @@ namespace MusicSort.Models
         }
 
         /// <summary>
-        /// Sets a new directory to search files from
-        /// Tests if the directory is valid
-        /// </summary>
-        /// <param name="path">Path of the directory</param>
-        /// <returns>returns if the operation was successful</returns>
-        public bool SetNewSelectedDirectory(string path)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Gets the music files from a directory
         /// </summary>
         /// <param name="path">Path of the directory to search through</param>
         /// <returns>Returns the flac, mp3, wma files found in the directory</returns>
         public File[] GetFilesFromDirectory(string path)
         {
-            throw new NotImplementedException();
+            //test if the directory exists
+            if (Path.IsPathRooted(path))
+            {
+                //get the files of the directory
+                try
+                {
+                    //get the files of the directory and filter them
+                    List<File> files = new List<File>();
+                    foreach (string file in Directory.GetFiles(path))
+                        //filter the files
+                        if (SupportedTypes.Contains(file.Substring(file.LastIndexOf('.') + 1).ToLower()))
+                            files.Add(new File(file));
+
+                    return files.ToArray();
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return null;
+                }
+            }
+            else
+                return null;
         }
 
         /// <summary>
@@ -169,6 +216,24 @@ namespace MusicSort.Models
         public bool SetPrefixFromIndex()
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Sets a new general name if it is valid
+        /// </summary>
+        /// <param name="name">new name</param>
+        /// <returns>successfulness of the operation</returns>
+        public bool SetNewGeneralName(string name)
+        {
+            //verify validity
+            //test the name is valid
+            if (!name.Any(c => Path.GetInvalidFileNameChars().Contains(c)) || name.Length <= 255)
+            {
+                GeneralName = name;
+                return true;
+            }
+
+            return false;
         }
     }
 

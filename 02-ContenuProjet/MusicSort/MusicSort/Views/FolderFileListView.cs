@@ -27,34 +27,9 @@ namespace MusicSort.Views
         public DoActionHandler Reset { get; set; }
 
         /// <summary>
-        /// Method to trigger when wanting place the file lower in the order
+        /// Method to trigger when wanting play the file
         /// </summary>
         public DoActionHandler Play { get; set; }
-
-        /// <summary>
-        /// Method to trigger when wanting rename the file
-        /// </summary>
-        public DoActionHandler Rename { get; set; }
-
-        /// <summary>
-        /// Method to trigger when wanting remove the file from the playlist
-        /// </summary>
-        public DoActionHandler RemoveFromPlaylist { get; set; }
-
-        /// <summary>
-        /// Method to trigger when wanting place the file higher in the order
-        /// </summary>
-        public DoActionHandler PlaceHigher { get; set; }
-
-        /// <summary>
-        /// Method to trigger when wanting place the file lower in the order
-        /// </summary>
-        public DoActionHandler PlaceLower { get; set; }
-
-        /// <summary>
-        /// Method to trigger when wanting to send the file to the playlist
-        /// </summary>
-        public DoActionHandler SendToPlaylist { get; set; }
 
         /// <summary>
         /// Column containing the information about the name of the file listed
@@ -73,34 +48,86 @@ namespace MusicSort.Views
         {
             InitializeComponent();
 
-            _nameColumn = new ColumnHeader();
-            _extensionColumn = new ColumnHeader();
-
-            // NameColumn
-            _nameColumn.Text = "Nom";
-
-            // ExtensionColumn
-            _extensionColumn.Text = "Extension";
-
-            // FolderFileListView
-            Columns.AddRange(new ColumnHeader[] {
-            _nameColumn,
-            _extensionColumn});
-            Location = new Point(89, 82);
+            Location = new Point(0, 0);
             Name = "FolderFileListView";
-            Size = new Size(163, 268);
+            Size = new Size(210, 350);
             UseCompatibleStateImageBehavior = false;
+            View = View.Details;
+            Scrollable = true;
+
+            _nameColumn = new ColumnHeader()
+            {
+                Width = Size.Width / 3 * 2,
+                Text = "Nom"
+            };
+            _extensionColumn = new ColumnHeader()
+            {
+                Width = Size.Width / 3 - (Size.Width % 3 * 3),
+                Text = "Extension"
+            };
+
+            Columns.Add(_nameColumn);
+            Columns.Add(_extensionColumn);
+
+            MouseClick += FolderFileListView_MouseClick;
+            MouseDoubleClick += FolderFileListView_MouseDoubleClick;
 
             Refresh();
         }
 
         /// <summary>
-        /// Sets the new files of the folder
+        /// Event triggered when the user clicks the ListView
         /// </summary>
-        /// <param name="files">new files to set</param>
-        public void SetNewFiles(File[] files)
+        /// <param name="sender">Object triggering the event</param>
+        /// <param name="e">Arguments of the event</param>
+        private void FolderFileListView_MouseClick(object sender, MouseEventArgs e)
         {
-            throw new NotImplementedException();
+            //test if the event was for a right click and if it is a file item
+            if (e.Button == MouseButtons.Right && GetItemAt(e.X, e.Y) is FileItem)
+            {
+                //find the clicked item and show its menu
+                ((FileItem)GetItemAt(e.X, e.Y))?.FolderFileMenu.Show(this, e.Location);
+            }
+        }
+
+        /// <summary>
+        /// Event triggered when the control is double clicked
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void FolderFileListView_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            //test if item clicked was of FileItem type
+            if (GetItemAt(e.X, e.Y) is FileItem)
+            {
+                //detect if an item was double clicked
+                if ((FileItem)GetItemAt(e.X, e.Y) != null)
+                {
+                    FileItem item = (FileItem)GetItemAt(e.X, e.Y);
+                    Play(item.File);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the new fileItems of the folder
+        /// </summary>
+        /// <param name="items">new fileItems to set</param>
+        public void SetNewFileItems(FileItem[] items)
+        {
+            //add items that should be added
+            foreach (FileItem item in items)
+                //test if the item isn't present in the list
+                if (!Items.Contains(item))
+                    Items.Add(item);
+
+            //remove items that should be removed
+            foreach (FileItem item in Items)
+                //test if the item isn't present in the array given
+                if (!items.Contains(item))
+                    Items.Remove(item);
+
+            Refresh();
         }
 
         /// <summary>
@@ -110,7 +137,18 @@ namespace MusicSort.Views
         /// <returns>returns the fileitems found</returns>
         public FileItem[] GetFileItemsFromFiles(File[] files)
         {
-            throw new NotImplementedException();
+            //list of items to returns
+            List<FileItem> items = new List<FileItem>();
+
+            //go through the files
+            foreach (File file in files)
+                //go through the items
+                foreach (FileItem item in Items)
+                    //test if it is the right item
+                    if (item.File == file)
+                        items.Add(item);
+
+            return items.ToArray();
         }
     }
 }

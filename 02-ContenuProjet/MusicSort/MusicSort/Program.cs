@@ -1,7 +1,7 @@
 ﻿///ETML
 ///Auteur : Aurélien Devaud
 ///Date : 08.05.2024
-///Description : 
+///Description : Main page of code of the application
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,14 @@ namespace MusicSort
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ViewForm());
+
+            //set up th mvc
+            Model model = new Model();
+            ViewForm view = new ViewForm();
+            Controller controller = new Controller(model, view);
+
+            //start the application
+            Application.Run(view);
         }
     }
 }

@@ -152,6 +152,8 @@ namespace MusicSort.Views
 
                 baseNode.Nodes.AddRange(GetNodeChildren(path));
 
+                Nodes.Add(baseNode);
+
                 BaseDirectory = path;
 
                 return true;

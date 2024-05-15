@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MusicSort.Models;
 using MusicSort.Views;
+using System.Windows.Forms;
 
 namespace MusicSort.Controllers
 {
@@ -40,6 +41,9 @@ namespace MusicSort.Controllers
 
             model.Controller = this;
             view.Controller = this;
+
+            view.FolderFileListView.Play = ListenToFile;
+            view.PlaylistView.Play = ListenToFile;
         }
 
         /// <summary>
@@ -70,9 +74,9 @@ namespace MusicSort.Controllers
         /// <summary>
         /// Switch the order with wich the playlist should be sorted
         /// </summary>
-        public void SwitchSortOrder()
+        public void SwitchSortingOrder()
         {
-            throw new NotImplementedException();
+            View.PlaylistView.SwitchSortOrder();
         }
 
         /// <summary>
@@ -80,7 +84,14 @@ namespace MusicSort.Controllers
         /// </summary>
         public void SelectDirectory()
         {
-            throw new NotImplementedException();
+            //open dialog to find a directory
+            string path = View.OpenFolderBrowserDialog();
+
+            if (path != null)
+            {
+                View.FolderBrowser.SetBaseDirectory(path);
+                View.baseDirectoryTextBox.Text = path;
+            }
         }
 
         /// <summary>
@@ -89,7 +100,18 @@ namespace MusicSort.Controllers
         /// <param name="path">Path of the directory selected</param>
         public void DirectorySelected(string path)
         {
-            throw new NotImplementedException();
+            //get the directory's files
+            File[] files = Model.GetFilesFromDirectory(path);
+
+            //test if there was no error
+            if (files != null)
+            {
+                View.SetFileItemsForFolderListView(files);
+                Model.SelectedPath = path;
+                View.openFolderLabel.Text = path.Substring(path.LastIndexOf('\\'));
+            }
+            else
+                View.SendErrorMessage("Erreur lors de la récupération des fichiers", "Une erreur s'est produite lors de la récupération des fichiers du dossier sélectionné");
         }
 
         /// <summary>
@@ -98,7 +120,14 @@ namespace MusicSort.Controllers
         /// <param name="files">files to send to the playlist</param>
         public void SendFilesToPlaylist(File[] files)
         {
-            throw new NotImplementedException();
+            //go through the files given
+            foreach (File file in files)
+            {
+                Model.Playlist.Add(file);
+                file.IndexInPlaylist = Model.Playlist.Count;
+            }
+
+            View.SetFileItemsForPlaylistView(Model.Playlist.ToArray());
         }
 
         /// <summary>
@@ -107,7 +136,11 @@ namespace MusicSort.Controllers
         /// <param name="files">files to remove</param>
         public void RemoveFilesFromPlaylist(File[] files)
         {
-            throw new NotImplementedException();
+            //remove each file
+            foreach (File file in files)
+                Model.Playlist.Remove(file);
+
+            View.SetFileItemsForPlaylistView(Model.Playlist.ToArray());
         }
 
         /// <summary>
@@ -115,25 +148,62 @@ namespace MusicSort.Controllers
         /// </summary>
         public void SortPlaylist()
         {
-            throw new NotImplementedException();
+            Model.SortFiles();
+            View.PlaylistView.Sort();
         }
 
         /// <summary>
-        /// Place file higher in the order of the playlist
+        /// Place files higher in the order of the playlist
         /// </summary>
-        /// <param name="file">File ot place higher</param>
-        public void PlaceFileHigher(File file)
+        /// <param name="files">Files to place higher</param>
+        public void PlaceFilesHigher(File[] files)
         {
-            throw new NotImplementedException();
+            //test if there are files to place higher
+            if (files != null && files.Length > 0)
+            {
+                //sort the selected files
+                List<File> files_ = files.OrderBy(f => f.IndexInPlaylist).ToList();
+
+                //test if the highest file has room to go up
+                if (files_[0].IndexInPlaylist > 0) 
+                {
+                    //place the displaced file lower
+                    Model.FindFileByIndex(files_[0].IndexInPlaylist - 1).IndexInPlaylist = files_[files_.Count - 1].IndexInPlaylist;
+
+                    //place the files higher
+                    foreach (File file in files_)
+                        file.IndexInPlaylist--; 
+                }
+
+                View.PlaylistView.Sort();
+            }
         }
 
         /// <summary>
-        /// Place file lower in the order of the playlist
+        /// Place files lower in the order of the playlist
         /// </summary>
-        /// <param name="file">File ot place lower</param>
-        public void PlaceFileLower(File file)
+        /// <param name="files">Files to place lower</param>
+        public void PlaceFilesLower(File[] files)
         {
-            throw new NotImplementedException();
+            //test if there are files to place lower
+            if (files != null && files.Length > 0)
+            {
+                //sort the selected files
+                List<File> files_ = files.OrderBy(f => f.IndexInPlaylist).Reverse().ToList();
+
+                //test if the highest file has room to go down
+                if (files_[0].IndexInPlaylist < Model.Playlist[Model.Playlist.Count - 1].IndexInPlaylist)
+                {
+                    //place the displaced file higher
+                    Model.FindFileByIndex(files_[0].IndexInPlaylist + 1).IndexInPlaylist = files_[files_.Count - 1].IndexInPlaylist;
+
+                    //place the files higher
+                    foreach (File file in files_)
+                        file.IndexInPlaylist++;
+                }
+
+                View.PlaylistView.Sort();
+            }
         }
 
         /// <summary>
@@ -142,17 +212,42 @@ namespace MusicSort.Controllers
         /// <param name="file">File to rename</param>
         public void RenameFile(File file)
         {
-            throw new NotImplementedException();
+            //ask the user for a new name
+            string newName = View.AskForNewName(file);
+            if (!file.SetNewName(newName))
+                View.SendErrorMessage("Erreur de renommage", "Le nom n'est pas valide pour ce fichier.");
+
+            View.PlaylistView.Refresh();
         }
 
         /// <summary>
         /// Reset a file to its default state
-        /// Reset name and order
+        /// Reset name
         /// </summary>
         /// <param name="file">File to reset</param>
         public void ResetFile(File file)
         {
-            throw new NotImplementedException();
+            if (!file.SetNewName(file.RealName))
+                View.SendErrorMessage("Erreur de renommage", "Le nom n'est pas valide pour ce fichier.");
+
+            View.PlaylistView.Refresh();
+        }
+
+        /// <summary>
+        /// Reset all files to their default state
+        /// Reset name, order and numbers
+        /// </summary>
+        public void ResetAll()
+        {
+            //reset every file if possible
+            foreach (File file in Model.Playlist)
+            {
+                file.SetNewName(file.RealName);
+                file.SetNewPrefix("");
+                file.SetNewPath(file.RealPath);
+                Model.SortFiles();
+                View.PlaylistView.Sort();
+            }
         }
 
         /// <summary>
@@ -170,6 +265,7 @@ namespace MusicSort.Controllers
         /// <param name="name">New general name</param>
         public void InputNewGeneralName(string name)
         {
+            Model
             throw new NotImplementedException();
         }
 
@@ -204,6 +300,16 @@ namespace MusicSort.Controllers
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Change the mode of application of the changes
+        /// </summary>
+        /// <param name="mode">new mode of application</param>
+        public void ChangeApplicationMode(ApplicationMode mode)
+        {
+            throw new NotImplementedException();
+        }
+
          /// <summary>
          /// Applies all changes to the real files
          /// </summary>
