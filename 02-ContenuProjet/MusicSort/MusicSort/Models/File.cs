@@ -68,6 +68,11 @@ namespace MusicSort.Models
         public int IndexInPlaylist { get; set; }
 
         /// <summary>
+        /// Tells if the 'custom' file is a copy
+        /// </summary>
+        public bool IsCopy { get; set; }
+
+        /// <summary>
         /// Event triggered when an information is changed
         /// </summary>
         public event FileInfoChangedEventHandler FileInfoChangedEvent;
@@ -84,19 +89,15 @@ namespace MusicSort.Models
             CustomPath = RealPath;
             Prefix = "";
             IndexInPlaylist = indexInPlaylist;
+            IsCopy = false;
         }
 
         /// <summary>
-        /// Tests if the file would be unique given the parameters
+        /// Tests if the file would be unique in the path given
         /// </summary>
         /// <param name="path">Path of the file</param>
-        /// <param name="name">Name of the file</param>
-        /// <param name="prefix">Prefix of the file</param>
-        /// <returns>Returns if the name would be unique</returns>
-        public bool WouldFileBeUnique(string path, string name, string prefix = "")
-        {
-            throw new NotImplementedException();
-        }
+        /// <returns>Returns if the file would be unique</returns>
+        public bool WouldFileBeUnique(string path) => !System.IO.File.Exists(path + "\\" + DisplayName + "." + RealExtension);
 
         /// <summary>
         /// Sets a new prefix for the file
@@ -105,7 +106,9 @@ namespace MusicSort.Models
         /// <returns>Returns if the operation was successful</returns>
         public bool SetNewPrefix(string prefix)
         {
-            throw new NotImplementedException();
+            Prefix = prefix + "_";
+            FileInfoChangedEvent?.Invoke(this);
+            return true;
         }
 
         /// <summary>
@@ -123,6 +126,7 @@ namespace MusicSort.Models
                 if (!(System.IO.File.Exists(CustomPath + '\\' + name + '.' + RealExtension) || name == CustomName))
                 {
                     CustomName = name;
+                    FileInfoChangedEvent?.Invoke(this);
                     return true;
                 }
             }
@@ -137,7 +141,16 @@ namespace MusicSort.Models
         /// <returns>Returns if the operation was successful</returns>
         public bool SetNewPath(string path)
         {
-            throw new NotImplementedException();
+            //test if the path is valid
+            if (path != null && Directory.Exists(path))
+            {
+                CustomPath = path;
+                FileInfoChangedEvent?.Invoke(this);
+                return true;
+            }
+            else
+                return false;
+
         }
 
         /// <summary>
@@ -146,7 +159,51 @@ namespace MusicSort.Models
         /// <returns>Returns if the operation was successful</returns>
         public bool ApplyChanges()
         {
-            throw new NotImplementedException();
+            //test if the name is different than the last one
+            if (FullCustomName == FullRealPath)
+                return true;
+
+            //test if the new full name is valid
+            if (Path.IsPathRooted(FullCustomName) && FullCustomName.Length < 260)
+            {
+                //test if a file doesn't already exist with the same name 
+                if (!System.IO.File.Exists(FullCustomName))
+                {
+                    //test if the file should be renamed
+                    if (!IsCopy)
+                        System.IO.File.Move(FullRealPath, FullCustomName);
+                    else
+                        System.IO.File.Copy(FullRealPath, FullCustomName);
+
+                    FullRealPath = FullCustomName;
+
+                    return true;
+                }
+                //if not, try to replace it
+                else
+                {
+                    try
+                    {
+                        System.IO.File.Delete(FullCustomName);
+
+                        //test if the file should be renamed
+                        if (!IsCopy)
+                            System.IO.File.Move(FullRealPath, FullCustomName);
+                        else
+                            System.IO.File.Copy(FullRealPath, FullCustomName);
+
+                        FullRealPath = FullCustomName;
+
+                        return true;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+                return false;
         }
     }
 

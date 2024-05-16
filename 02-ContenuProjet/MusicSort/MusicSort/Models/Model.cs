@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using MusicSort.Controllers;
 using System.IO;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
+using System.Security.Permissions;
 
 namespace MusicSort.Models
 {
@@ -19,12 +21,6 @@ namespace MusicSort.Models
     /// </summary>
     public class Model
     {
-
-        /// <summary>
-        /// Tells if the number prefix is activated
-        /// </summary>
-        private bool _isPrefixActivated;
-
         /// <summary>
         /// File types supported by the applicatiom
         /// </summary>
@@ -56,11 +52,6 @@ namespace MusicSort.Models
         public string GeneralName { get; private set; }
 
         /// <summary>
-        /// Prefix of files if the numbering is activated
-        /// </summary>
-        public string NumberPrefix { get => throw new NotImplementedException(); }
-
-        /// <summary>
         /// Number of digits in the prefix
         /// </summary>
         public int NumberDigit { get; private set; }
@@ -74,11 +65,7 @@ namespace MusicSort.Models
         /// Get: Tells if the number prefix is activated
         /// Set: If the prefix is activated, set the prefix, if not remove it
         /// </summary>
-        public bool IsPrefixActivated 
-        { 
-            get => _isPrefixActivated; 
-            set => throw new NotImplementedException();
-        }
+        public bool IsPrefixActivated { get; set; }
 
         /// <summary>
         /// Mode of application of the changes
@@ -96,7 +83,7 @@ namespace MusicSort.Models
             GeneralName = "";
             NumberDigit = 0;
             StartNumber = 0;
-            _isPrefixActivated = false;
+            IsPrefixActivated = false;
             ApplicationMode = ApplicationMode.Rename;
             SupportedTypes = new string[] { "mp3", "wma", "flac"};
         }
@@ -136,7 +123,19 @@ namespace MusicSort.Models
         /// <returns>returns if the operation was successful</returns>
         public bool SetNewDestination(string path)
         {
-            throw new NotImplementedException();
+            //test if the directory exists
+            if (path != null && Directory.Exists(path))
+            {
+                DestinationPath = path;
+
+                //set the paths for the files
+                foreach (File file in Playlist)
+                    file.SetNewPath(path);
+
+                return true;
+            }
+            else
+                return false;
         }
 
         /// <summary>
@@ -171,24 +170,83 @@ namespace MusicSort.Models
         }
 
         /// <summary>
-        /// Tests if a name is valid for a file
-        /// </summary>
-        /// <param name="name">New name of the file</param>
-        /// <param name="file">file to test</param>
-        /// <returns>Returns if the name is valid</returns>
-        public bool IsValidFileName(string name, File file)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Tests if the mode selected is possibly applicable
         /// </summary>
         /// <param name="mode">mode to test</param>
-        /// <returns>returns if the mode is applicable</returns>
-        public bool TestMode(ApplicationMode mode)
+        /// <returns>returns the errors if there are any</returns>
+        public List<Tuple<File, ApplicationError>> TestMode(ApplicationMode mode)
         {
-            throw new NotImplementedException();
+            List<Tuple<File, ApplicationError>> results = new List<Tuple<File, ApplicationError>>();
+
+            foreach (File file in Playlist)
+            {
+                //test if the file is modified
+                if (file.FullCustomName != file.FullRealPath)
+                {
+                    //test for the corresponding mode of application
+                    switch (mode)
+                    {
+                        case ApplicationMode.Rename:
+                            //test if the file is read-only
+                            if ((System.IO.File.GetAttributes(file.FullRealPath) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                            {
+                                results.Add(new Tuple<File, ApplicationError>(file, ApplicationError.ActionUnauthorized));
+                            }
+                            else
+                            {
+                                //test the write permissions
+                                try
+                                {
+                                    new FileIOPermission(FileIOPermissionAccess.Write, file.FullRealPath).Demand();
+
+                                    //test if a file already exists with the name
+                                    if (System.IO.File.Exists(file.FullCustomName))
+                                        results.Add(new Tuple<File, ApplicationError>(file, ApplicationError.FileAlreadyExists));
+                                }
+                                catch (System.Security.SecurityException)
+                                {
+                                    results.Add(new Tuple<File, ApplicationError>(file, ApplicationError.ActionUnauthorized));
+                                }
+                            }
+                            break;
+
+                        case ApplicationMode.RenameAndCopy:
+                            //test the read permissions
+                            try
+                            {
+                                new FileIOPermission(FileIOPermissionAccess.Read, file.FullRealPath).Demand();
+
+                                //test if a file already exists with the name
+                                if (System.IO.File.Exists(file.FullCustomName))
+                                    results.Add(new Tuple<File, ApplicationError>(file, ApplicationError.FileAlreadyExists));
+                            }
+                            catch (System.Security.SecurityException)
+                            {
+                                results.Add(new Tuple<File, ApplicationError>(file, ApplicationError.ActionUnauthorized));
+                            }
+                            break;
+
+                        case ApplicationMode.RenameAndMove:
+                            //test the write permissions
+                            try
+                            {
+                                new FileIOPermission(FileIOPermissionAccess.Read, file.FullRealPath).Demand();
+                                new FileIOPermission(FileIOPermissionAccess.Write, file.FullRealPath).Demand();
+
+                                //test if a file already exists with the name
+                                if (System.IO.File.Exists(file.FullCustomName))
+                                    results.Add(new Tuple<File, ApplicationError>(file, ApplicationError.FileAlreadyExists));
+                            }
+                            catch (System.Security.SecurityException)
+                            {
+                                results.Add(new Tuple<File, ApplicationError>(file, ApplicationError.ActionUnauthorized));
+                            }
+                            break;
+                    }
+                }
+            }
+
+            return results;
         }
 
         /// <summary>
@@ -197,17 +255,45 @@ namespace MusicSort.Models
         /// <param name="mode">new mode of application</param>
         public void SetNewMode(ApplicationMode mode)
         {
-            throw new NotImplementedException();
+            //test for the corresponding mode of application
+            switch (mode)
+            {
+                case ApplicationMode.Rename:
+                    Playlist.ForEach(f =>
+                    {
+                        f.SetNewPath(f.RealPath);
+                        f.IsCopy = false;
+                    }
+                    );
+                    break;
+
+                case ApplicationMode.RenameAndCopy:
+                    Playlist.ForEach(f => 
+                    {
+                        f.SetNewPath(DestinationPath);
+                        f.IsCopy = true;
+                    }
+                    );
+                    break;
+
+                case ApplicationMode.RenameAndMove:
+                    Playlist.ForEach(f =>
+                    {
+                        f.SetNewPath(DestinationPath);
+                        f.IsCopy = false;
+                    }
+                     );
+                    break;
+            }
+
+            ApplicationMode = mode;
         }
 
         /// <summary>
         /// Tests if the changes can be applied
         /// </summary>
         /// <returns>Returns each file and their errors</returns>
-        public List<Tuple<File, string>> TestForApplication()
-        {
-            throw new NotImplementedException();
-        }
+        public List<Tuple<File, ApplicationError>> TestForApplication() => TestMode(ApplicationMode);
 
         /// <summary>
         /// Sets the prefix of the files from their index
@@ -215,7 +301,50 @@ namespace MusicSort.Models
         /// <returns>returns if the operation was successful</returns>
         public bool SetPrefixFromIndex()
         {
-            throw new NotImplementedException();
+            if (NumberDigit > 0)
+            {
+                //number of zeros to add before the number
+                int numberOfZeros = 0;
+
+                //set the new prefixes
+                foreach (File file in Playlist)
+                {
+                    numberOfZeros = NumberDigit - $"{file.IndexInPlaylist + StartNumber}".Length;
+
+                    //prefix of the file's name
+                    string prefix = "";
+
+                    //add the zeros
+                    for (int i = 0; i < numberOfZeros; i++)
+                        prefix += "0";
+
+                    prefix += $"{file.IndexInPlaylist + StartNumber}";
+
+                    file.SetNewPrefix(prefix);
+                }
+
+                return true;
+            }
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// Sets the custom names of the files as the general name
+        /// </summary>
+        /// <returns>returns if the operation was successful</returns>
+        public bool DisplayGeneralName()
+        {
+            if (GeneralName != null && GeneralName.Length > 0)
+            {
+                //set the new names
+                foreach (File file in Playlist)
+                    file.SetNewName(GeneralName);
+
+                return true;
+            }
+            else
+                return false;
         }
 
         /// <summary>
@@ -235,6 +364,43 @@ namespace MusicSort.Models
 
             return false;
         }
+
+        /// <summary>
+        /// Sets the new starting number if it is valid
+        /// </summary>
+        /// <param name="number">new number</param>
+        /// <returns>successfulness of the operation</returns>
+        public bool SetNewStartingNumber(string number)
+        {
+            //verify validity
+            //test the number is valid
+            if (number != null || number.Length > 0)
+            {
+                if (Regex.IsMatch(number, @"^\d+$"))
+                {
+                    //stores the result of the parsing
+                    int parseResult = 0;
+
+                    //try to parse the given number
+                    if (Int32.TryParse(number, out parseResult))
+                    {
+                        NumberDigit = number.Length;
+                        return true;
+                    }
+                    else
+                        return false;
+                }
+                else
+                    return false;
+            }
+            else
+            {
+                StartNumber = 0;
+                NumberDigit = 0;
+
+                return true;
+            }
+        }
     }
 
     /// <summary>
@@ -245,5 +411,14 @@ namespace MusicSort.Models
         Rename,
         RenameAndCopy,
         RenameAndMove
+    }
+
+    /// <summary>
+    /// Enumerates the diffent ways the application of the modifications can be applied
+    /// </summary>
+    public enum ApplicationError
+    {
+        FileAlreadyExists,
+        ActionUnauthorized
     }
 }

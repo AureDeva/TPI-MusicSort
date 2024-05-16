@@ -256,7 +256,16 @@ namespace MusicSort.Controllers
         /// <param name="number">number to input</param>
         public void InputNewNumber(string number)
         {
-            throw new NotImplementedException();
+            //test if name is valid
+            if (number != null)
+            {
+                if (Model.SetNewStartingNumber(number))
+                    View.numberErrorLabel.Text = "";
+                else
+                    View.numberErrorLabel.Text = "Nombre invalide!";
+            }
+            else
+                View.numberErrorLabel.Text = "Le nombre ne peut pas être vide!";
         }
 
         /// <summary>
@@ -265,8 +274,16 @@ namespace MusicSort.Controllers
         /// <param name="name">New general name</param>
         public void InputNewGeneralName(string name)
         {
-            Model
-            throw new NotImplementedException();
+            //test if name is not null
+            if (name != null)
+            {
+                if (Model.SetNewGeneralName(name))
+                    View.generalNameErrorLabel.Text = "";
+                else
+                    View.generalNameErrorLabel.Text = "Nom invalide!";
+            }
+            else
+                View.generalNameErrorLabel.Text = "Le nom ne peut pas être vide!";
         }
 
         /// <summary>
@@ -274,7 +291,7 @@ namespace MusicSort.Controllers
         /// </summary>
         public void ActivateNumbering()
         {
-            throw new NotImplementedException();
+            Model.IsPrefixActivated = true;
         }
 
         /// <summary>
@@ -282,7 +299,7 @@ namespace MusicSort.Controllers
         /// </summary>
         public void DeactivateNumbering()
         {
-            throw new NotImplementedException();
+            Model.IsPrefixActivated = false;
         }
 
         /// <summary>
@@ -290,7 +307,14 @@ namespace MusicSort.Controllers
         /// </summary>
         public void SearchForDestinationDirectory()
         {
-            throw new NotImplementedException();
+            //open the folder browser dialog
+            string path = View.OpenFolderBrowserDialog();
+
+            if (path != null)
+            {
+                Model.SetNewDestination(path);
+                View.destinationTextBox.Text = path;
+            }
         }
 
         /// <summary>
@@ -298,7 +322,14 @@ namespace MusicSort.Controllers
         /// </summary>
         public void DisplayGeneralChanges()
         {
-            throw new NotImplementedException();
+            //test if the number and name are set
+            if (Model.NumberDigit > 0 && Model.GeneralName.Length > 0 && Model.IsPrefixActivated)
+            {
+                Model.SetPrefixFromIndex();
+                Model.DisplayGeneralName();
+            }
+            else
+                View.SendErrorMessage("Erreur dans l'aperçu des changements", "Une erreur c'est produite lors de l'aperçu des changements!");
         }
 
         /// <summary>
@@ -307,7 +338,7 @@ namespace MusicSort.Controllers
         /// <param name="mode">new mode of application</param>
         public void ChangeApplicationMode(ApplicationMode mode)
         {
-            throw new NotImplementedException();
+            Model.SetNewMode(mode);
         }
 
          /// <summary>
@@ -315,7 +346,46 @@ namespace MusicSort.Controllers
          /// </summary>
         public void Apply()
         {
-            throw new NotImplementedException();
+            //test what is applicable
+            List<Tuple<File, ApplicationError>> testResults = Model.TestForApplication();
+
+            //keep in mind if it is possible to continue 
+            bool canContinue = true;
+
+            //test if there were errors
+            if (testResults.Count > 0)
+                canContinue = View.AskForConfirmation("Problème(s) pour l'application", 
+                    $"Il y aura {testResults.Count} complication durant l'application des changements. \n" +
+                    "Voulez-vous quand même continué?");
+
+            if (canContinue)
+            {
+                //apply the changes to each file
+                foreach (File file in Model.Playlist)
+                {
+                    //find if the file had an error
+                    if (testResults.Exists(r => r.Item1 == file))
+                    {
+                        switch (testResults.Find(r => r.Item1 == file).Item2)
+                        {
+                            case ApplicationError.FileAlreadyExists:
+                                //ask the user for confirmation to replace the file
+                                if (View.AskForConfirmation("Doublon", $"Un fichier du nom : {file.FullCustomName} existe déjà. \nVoulez-vous le remplacer ?"))
+                                    if (!file.ApplyChanges())
+                                        View.SendErrorMessage("Erreur", $"Une erreur s'est produite lors de l'application des changements sur le fichier : \n {file.RealPath}");
+                                break;
+                            case ApplicationError.ActionUnauthorized:
+                                View.SendErrorMessage("Erreur", $"Action non-autorisée sur le fichier : \n {file.RealPath}");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        if (!file.ApplyChanges())
+                            View.SendErrorMessage("Erreur", $"Une erreur s'est produite lors de l'application des changements sur le fichier : \n {file.RealPath}");
+                    }
+                }
+            }
         }
     }
 }

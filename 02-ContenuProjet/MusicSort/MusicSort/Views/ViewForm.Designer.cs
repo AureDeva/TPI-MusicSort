@@ -33,6 +33,8 @@
             this.baseDirectoryTextBox = new System.Windows.Forms.TextBox();
             this.openFolderLabel = new System.Windows.Forms.Label();
             this._folderFileChoicePanel = new System.Windows.Forms.Panel();
+            this._folderBrowser = new MusicSort.Views.FolderBrowser();
+            this._folderFileListView = new MusicSort.Views.FolderFileListView();
             this._addToPlaylistButton = new System.Windows.Forms.Button();
             this._addAllToPlaylistButton = new System.Windows.Forms.Button();
             this._selectionLabel = new System.Windows.Forms.Label();
@@ -41,6 +43,7 @@
             this._playlistPanel = new System.Windows.Forms.Panel();
             this._placeDownButton = new System.Windows.Forms.Button();
             this._placeUpButton = new System.Windows.Forms.Button();
+            this._playlistView = new MusicSort.Views.PlaylistView();
             this._stopButton = new System.Windows.Forms.Button();
             this._playButton = new System.Windows.Forms.Button();
             this._resetAllButton = new System.Windows.Forms.Button();
@@ -62,14 +65,12 @@
             this._renameAndCopyModeRadioButton = new System.Windows.Forms.RadioButton();
             this._renameModeRadioButton = new System.Windows.Forms.RadioButton();
             this._fileNumberingCheckBox = new System.Windows.Forms.CheckBox();
-            this._startNumberTextBox = new System.Windows.Forms.TextBox();
+            this.startNumberTextBox = new System.Windows.Forms.TextBox();
             this._startNumberLabel = new System.Windows.Forms.Label();
             this.generalNameErrorLabel = new System.Windows.Forms.Label();
             this._generalNameLabel = new System.Windows.Forms.Label();
-            this._generalNameTextBox = new System.Windows.Forms.TextBox();
-            this._playlistView = new MusicSort.Views.PlaylistView();
-            this._folderBrowser = new MusicSort.Views.FolderBrowser();
-            this._folderFileListView = new MusicSort.Views.FolderFileListView();
+            this.generalNameTextBox = new System.Windows.Forms.TextBox();
+            this.numberErrorLabel = new System.Windows.Forms.Label();
             this._folderFileChoicePanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._openFolderPictureBox)).BeginInit();
             this._playlistPanel.SuspendLayout();
@@ -112,6 +113,35 @@
             this._folderFileChoicePanel.Name = "_folderFileChoicePanel";
             this._folderFileChoicePanel.Size = new System.Drawing.Size(539, 547);
             this._folderFileChoicePanel.TabIndex = 7;
+            // 
+            // _folderBrowser
+            // 
+            this._folderBrowser.ImageIndex = 0;
+            this._folderBrowser.Location = new System.Drawing.Point(23, 80);
+            this._folderBrowser.MaximumSize = new System.Drawing.Size(261, 434);
+            this._folderBrowser.MinimumSize = new System.Drawing.Size(261, 434);
+            this._folderBrowser.Name = "_folderBrowser";
+            this._folderBrowser.SelectedImageIndex = 0;
+            this._folderBrowser.ShowLines = false;
+            this._folderBrowser.ShowPlusMinus = false;
+            this._folderBrowser.ShowRootLines = false;
+            this._folderBrowser.Size = new System.Drawing.Size(261, 434);
+            this._folderBrowser.TabIndex = 11;
+            this._folderBrowser.FolderSelectedEvent += new MusicSort.Views.PathSelectedEventHandler(this.FolderBrowser_FolderSelectedEvent);
+            // 
+            // _folderFileListView
+            // 
+            this._folderFileListView.HideSelection = false;
+            this._folderFileListView.Location = new System.Drawing.Point(316, 80);
+            this._folderFileListView.MaximumSize = new System.Drawing.Size(210, 350);
+            this._folderFileListView.MinimumSize = new System.Drawing.Size(210, 350);
+            this._folderFileListView.Name = "_folderFileListView";
+            this._folderFileListView.Play = null;
+            this._folderFileListView.Reset = null;
+            this._folderFileListView.Size = new System.Drawing.Size(210, 350);
+            this._folderFileListView.TabIndex = 10;
+            this._folderFileListView.UseCompatibleStateImageBehavior = false;
+            this._folderFileListView.View = System.Windows.Forms.View.Details;
             // 
             // _addToPlaylistButton
             // 
@@ -204,6 +234,20 @@
             this._placeUpButton.Text = "↑";
             this._placeUpButton.UseVisualStyleBackColor = true;
             this._placeUpButton.Click += new System.EventHandler(this.PlaceUpButton_Click);
+            // 
+            // _playlistView
+            // 
+            this._playlistView.HideSelection = false;
+            this._playlistView.Location = new System.Drawing.Point(14, 79);
+            this._playlistView.MaximumSize = new System.Drawing.Size(210, 350);
+            this._playlistView.MinimumSize = new System.Drawing.Size(210, 350);
+            this._playlistView.Name = "_playlistView";
+            this._playlistView.Play = null;
+            this._playlistView.Size = new System.Drawing.Size(210, 350);
+            this._playlistView.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this._playlistView.TabIndex = 16;
+            this._playlistView.UseCompatibleStateImageBehavior = false;
+            this._playlistView.View = System.Windows.Forms.View.Details;
             // 
             // _stopButton
             // 
@@ -306,6 +350,7 @@
             // 
             // _applicationPanel
             // 
+            this._applicationPanel.Controls.Add(this.numberErrorLabel);
             this._applicationPanel.Controls.Add(this._destinationButton);
             this._applicationPanel.Controls.Add(this._applyButton);
             this._applicationPanel.Controls.Add(this._displayButton);
@@ -313,11 +358,11 @@
             this._applicationPanel.Controls.Add(this._destinationLabel);
             this._applicationPanel.Controls.Add(this._applicationModeGroupBox);
             this._applicationPanel.Controls.Add(this._fileNumberingCheckBox);
-            this._applicationPanel.Controls.Add(this._startNumberTextBox);
+            this._applicationPanel.Controls.Add(this.startNumberTextBox);
             this._applicationPanel.Controls.Add(this._startNumberLabel);
             this._applicationPanel.Controls.Add(this.generalNameErrorLabel);
             this._applicationPanel.Controls.Add(this._generalNameLabel);
-            this._applicationPanel.Controls.Add(this._generalNameTextBox);
+            this._applicationPanel.Controls.Add(this.generalNameTextBox);
             this._applicationPanel.Location = new System.Drawing.Point(14, 639);
             this._applicationPanel.Name = "_applicationPanel";
             this._applicationPanel.Size = new System.Drawing.Size(806, 107);
@@ -424,7 +469,7 @@
             // _fileNumberingCheckBox
             // 
             this._fileNumberingCheckBox.AutoSize = true;
-            this._fileNumberingCheckBox.Location = new System.Drawing.Point(195, 60);
+            this._fileNumberingCheckBox.Location = new System.Drawing.Point(195, 76);
             this._fileNumberingCheckBox.Name = "_fileNumberingCheckBox";
             this._fileNumberingCheckBox.Size = new System.Drawing.Size(127, 17);
             this._fileNumberingCheckBox.TabIndex = 5;
@@ -432,14 +477,14 @@
             this._fileNumberingCheckBox.UseVisualStyleBackColor = true;
             this._fileNumberingCheckBox.CheckedChanged += new System.EventHandler(this.FileNumberingCheckBox_CheckedChanged);
             // 
-            // _startNumberTextBox
+            // startNumberTextBox
             // 
-            this._startNumberTextBox.Enabled = false;
-            this._startNumberTextBox.Location = new System.Drawing.Point(195, 33);
-            this._startNumberTextBox.Name = "_startNumberTextBox";
-            this._startNumberTextBox.Size = new System.Drawing.Size(100, 20);
-            this._startNumberTextBox.TabIndex = 4;
-            this._startNumberTextBox.TextChanged += new System.EventHandler(this.StartNumberTextBox_TextChanged);
+            this.startNumberTextBox.Enabled = false;
+            this.startNumberTextBox.Location = new System.Drawing.Point(195, 33);
+            this.startNumberTextBox.Name = "startNumberTextBox";
+            this.startNumberTextBox.Size = new System.Drawing.Size(100, 20);
+            this.startNumberTextBox.TabIndex = 4;
+            this.startNumberTextBox.TextChanged += new System.EventHandler(this.StartNumberTextBox_TextChanged);
             // 
             // _startNumberLabel
             // 
@@ -468,56 +513,23 @@
             this._generalNameLabel.TabIndex = 1;
             this._generalNameLabel.Text = "Nom général";
             // 
-            // _generalNameTextBox
+            // generalNameTextBox
             // 
-            this._generalNameTextBox.Location = new System.Drawing.Point(23, 33);
-            this._generalNameTextBox.Name = "_generalNameTextBox";
-            this._generalNameTextBox.Size = new System.Drawing.Size(159, 20);
-            this._generalNameTextBox.TabIndex = 0;
-            this._generalNameTextBox.TextChanged += new System.EventHandler(this.GeneralNameTextBox_TextChanged);
+            this.generalNameTextBox.Enabled = false;
+            this.generalNameTextBox.Location = new System.Drawing.Point(23, 33);
+            this.generalNameTextBox.Name = "generalNameTextBox";
+            this.generalNameTextBox.Size = new System.Drawing.Size(159, 20);
+            this.generalNameTextBox.TabIndex = 0;
+            this.generalNameTextBox.TextChanged += new System.EventHandler(this.GeneralNameTextBox_TextChanged);
             // 
-            // _playlistView
+            // numberErrorLabel
             // 
-            this._playlistView.HideSelection = false;
-            this._playlistView.Location = new System.Drawing.Point(14, 79);
-            this._playlistView.MaximumSize = new System.Drawing.Size(210, 350);
-            this._playlistView.MinimumSize = new System.Drawing.Size(210, 350);
-            this._playlistView.Name = "_playlistView";
-            this._playlistView.Play = null;
-            this._playlistView.Size = new System.Drawing.Size(210, 350);
-            this._playlistView.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this._playlistView.TabIndex = 16;
-            this._playlistView.UseCompatibleStateImageBehavior = false;
-            this._playlistView.View = System.Windows.Forms.View.Details;
-            // 
-            // _folderBrowser
-            // 
-            this._folderBrowser.ImageIndex = 0;
-            this._folderBrowser.Location = new System.Drawing.Point(23, 80);
-            this._folderBrowser.MaximumSize = new System.Drawing.Size(261, 434);
-            this._folderBrowser.MinimumSize = new System.Drawing.Size(261, 434);
-            this._folderBrowser.Name = "_folderBrowser";
-            this._folderBrowser.SelectedImageIndex = 0;
-            this._folderBrowser.ShowLines = false;
-            this._folderBrowser.ShowPlusMinus = false;
-            this._folderBrowser.ShowRootLines = false;
-            this._folderBrowser.Size = new System.Drawing.Size(261, 434);
-            this._folderBrowser.TabIndex = 11;
-            this._folderBrowser.FolderSelectedEvent += new MusicSort.Views.PathSelectedEventHandler(this.FolderBrowser_FolderSelectedEvent);
-            // 
-            // _folderFileListView
-            // 
-            this._folderFileListView.HideSelection = false;
-            this._folderFileListView.Location = new System.Drawing.Point(316, 80);
-            this._folderFileListView.MaximumSize = new System.Drawing.Size(210, 350);
-            this._folderFileListView.MinimumSize = new System.Drawing.Size(210, 350);
-            this._folderFileListView.Name = "_folderFileListView";
-            this._folderFileListView.Play = null;
-            this._folderFileListView.Reset = null;
-            this._folderFileListView.Size = new System.Drawing.Size(210, 350);
-            this._folderFileListView.TabIndex = 10;
-            this._folderFileListView.UseCompatibleStateImageBehavior = false;
-            this._folderFileListView.View = System.Windows.Forms.View.Details;
+            this.numberErrorLabel.AutoSize = true;
+            this.numberErrorLabel.ForeColor = System.Drawing.Color.Red;
+            this.numberErrorLabel.Location = new System.Drawing.Point(192, 60);
+            this.numberErrorLabel.Name = "numberErrorLabel";
+            this.numberErrorLabel.Size = new System.Drawing.Size(0, 13);
+            this.numberErrorLabel.TabIndex = 13;
             // 
             // ViewForm
             // 
@@ -569,7 +581,6 @@
         private AxWMPLib.AxWindowsMediaPlayer axWindowsMediaPlayer1;
         private System.Windows.Forms.Panel _applicationPanel;
         private System.Windows.Forms.Label _generalNameLabel;
-        private System.Windows.Forms.TextBox _generalNameTextBox;
         private FolderBrowser _folderBrowser;
         private FolderFileListView _folderFileListView;
         private PlaylistView _playlistView;
@@ -581,7 +592,6 @@
         private System.Windows.Forms.RadioButton _renameAndCopyModeRadioButton;
         private System.Windows.Forms.RadioButton _renameModeRadioButton;
         private System.Windows.Forms.CheckBox _fileNumberingCheckBox;
-        private System.Windows.Forms.TextBox _startNumberTextBox;
         private System.Windows.Forms.Label _startNumberLabel;
         private System.Windows.Forms.Button _destinationButton;
         private System.Windows.Forms.Button _placeDownButton;
@@ -591,6 +601,9 @@
         public System.Windows.Forms.TextBox destinationTextBox;
         public System.Windows.Forms.Label generalNameErrorLabel;
         public System.Windows.Forms.TextBox baseDirectoryTextBox;
+        public System.Windows.Forms.Label numberErrorLabel;
+        public System.Windows.Forms.TextBox generalNameTextBox;
+        public System.Windows.Forms.TextBox startNumberTextBox;
     }
 }
 

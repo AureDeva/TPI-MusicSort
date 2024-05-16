@@ -330,10 +330,18 @@ namespace MusicSort.Views
         {
             //test if the box was checked
             if (((CheckBox)sender).Checked)
+            {
                 Controller.ActivateNumbering();
+                generalNameTextBox.Enabled = true;
+                startNumberTextBox.Enabled = true;
+            }
             //if the box was unchecked
             else
+            {
                 Controller.DeactivateNumbering();
+                generalNameTextBox.Enabled = false;
+                startNumberTextBox.Enabled = false;
+            }
         }
 
         /// <summary>

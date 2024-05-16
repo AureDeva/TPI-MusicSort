@@ -68,8 +68,18 @@ namespace MusicSort.Views
             ItemExtension = new ListViewSubItem(this, file.RealExtension);
             FolderFileMenu = new FolderFileItemMenu(file, sendToPlaylist, play);
             PlaylistMenu = new PlaylistItemMenu(file, reset, play, rename, removeFromPlaylist, placeHigher, placeLower);
+            File.FileInfoChangedEvent += File_FileInfoChangedEvent;
 
             SubItems.Add(ItemExtension);
+        }
+
+        /// <summary>
+        /// Event triggered when the display name of the file is changed
+        /// </summary>
+        /// <param name="file">file changed</param>
+        private void File_FileInfoChangedEvent(File file)
+        {
+            RefreshName();
         }
 
         /// <summary>
