@@ -9,6 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using NAudio.Wave;
+using System.Diagnostics;
+using NAudio.Lame;
 
 namespace MusicSort.Models
 {
@@ -17,6 +20,51 @@ namespace MusicSort.Models
     /// </summary>
     public class File
     {
+        /// <summary>
+        /// Path of the temporary files' directory
+        /// </summary>
+        public static string TempFilesDirectoryPath { get => AppDomain.CurrentDomain.BaseDirectory + "\\" + "temp_files"; }
+
+        /// <summary>
+        /// Separator of the prefix and the name
+        /// </summary>
+        private static  readonly char _prefixSeparator = ' ';
+
+        /// <summary>
+        /// Consctructs the static parts of the class
+        /// </summary>
+        static File()
+        {
+            //set temp files directory
+            //test if the directory exists
+            if (Directory.Exists(TempFilesDirectoryPath))
+                CleanTempFilesDirectory();
+            else
+                Directory.CreateDirectory(TempFilesDirectoryPath);
+        }
+
+        /// <summary>
+        /// Clean the directory of files
+        /// </summary>
+        public static void CleanTempFilesDirectory()
+        {
+            //test if the directory exists
+            if (Directory.Exists(TempFilesDirectoryPath))
+            {
+                //find all files of the directory
+                string[] tempFiles = Directory.GetFiles(TempFilesDirectoryPath);
+
+                //delete all files
+                foreach (string file in tempFiles)
+                    System.IO.File.Delete(file);
+            }
+        }
+
+        /// <summary>
+        /// Temporary path of the file
+        /// </summary>
+        public string TempFilePath { get; private set; }
+
         /// <summary>
         /// Full real path of the file
         /// </summary>
@@ -90,14 +138,49 @@ namespace MusicSort.Models
             Prefix = "";
             IndexInPlaylist = indexInPlaylist;
             IsCopy = false;
+            TempFilePath = "";
         }
 
         /// <summary>
-        /// Tests if the file would be unique in the path given
+        /// Get the path of the file to listen to
         /// </summary>
-        /// <param name="path">Path of the file</param>
-        /// <returns>Returns if the file would be unique</returns>
-        public bool WouldFileBeUnique(string path) => !System.IO.File.Exists(path + "\\" + DisplayName + "." + RealExtension);
+        /// <returns>Returns the path of the file to listen to</returns>
+        public string GetListeningPath()
+        {
+            //test if the file is of the FLAC type
+            if (RealExtension.ToLower() == "flac")
+            {
+                //test if the temp file already exists
+                if (System.IO.File.Exists(TempFilePath))
+                    return TempFilePath;
+                else
+                {
+                    //set the temp path
+                    int fileId = 0;
+
+                    //find a unique name
+                    while (System.IO.File.Exists(TempFilesDirectoryPath + "\\" + fileId + ".mp3"))
+                        fileId++;
+
+                    TempFilePath = TempFilesDirectoryPath + "\\" + fileId + ".mp3";
+
+                    //create a reader of the file
+                    using (var reader = new AudioFileReader(FullRealPath))
+                    {
+                        //create the writer of the file
+                        using (var writer = new LameMP3FileWriter(TempFilePath, reader.WaveFormat, LAMEPreset.VBR_90))
+                        {
+                            //copy the file to mp3
+                            reader.CopyTo(writer);
+                        }
+                    }
+
+                    return TempFilePath;
+                }
+            }
+            else
+                return FullRealPath;
+        }
 
         /// <summary>
         /// Sets a new prefix for the file
@@ -106,8 +189,18 @@ namespace MusicSort.Models
         /// <returns>Returns if the operation was successful</returns>
         public bool SetNewPrefix(string prefix)
         {
-            Prefix = prefix + "_";
-            FileInfoChangedEvent?.Invoke(this);
+            //test if the prefix is not empty
+            if (prefix != null && prefix != "")
+            {
+                Prefix = prefix + _prefixSeparator;
+                FileInfoChangedEvent?.Invoke(this);
+            }
+            else
+            {
+                Prefix = "";
+                FileInfoChangedEvent?.Invoke(this);
+            }
+
             return true;
         }
 
@@ -123,7 +216,7 @@ namespace MusicSort.Models
             if(!name.Any(c => Path.GetInvalidFileNameChars().Contains(c)) || name.Length <= 255)
             {
                 //test if the name would still be unique
-                if (!(System.IO.File.Exists(CustomPath + '\\' + name + '.' + RealExtension) || name == CustomName))
+                if (!System.IO.File.Exists(CustomPath + '\\' + name + '.' + RealExtension) && name != CustomName || name == RealName && CustomName != RealName)
                 {
                     CustomName = name;
                     FileInfoChangedEvent?.Invoke(this);
@@ -159,33 +252,18 @@ namespace MusicSort.Models
         /// <returns>Returns if the operation was successful</returns>
         public bool ApplyChanges()
         {
-            //test if the name is different than the last one
-            if (FullCustomName == FullRealPath)
-                return true;
-
-            //test if the new full name is valid
-            if (Path.IsPathRooted(FullCustomName) && FullCustomName.Length < 260)
+            try
             {
-                //test if a file doesn't already exist with the same name 
-                if (!System.IO.File.Exists(FullCustomName))
-                {
-                    //test if the file should be renamed
-                    if (!IsCopy)
-                        System.IO.File.Move(FullRealPath, FullCustomName);
-                    else
-                        System.IO.File.Copy(FullRealPath, FullCustomName);
-
-                    FullRealPath = FullCustomName;
-
+                //test if the name is different than the last one
+                if (FullCustomName == FullRealPath)
                     return true;
-                }
-                //if not, try to replace it
-                else
-                {
-                    try
-                    {
-                        System.IO.File.Delete(FullCustomName);
 
+                //test if the new full name is valid
+                if (Path.IsPathRooted(FullCustomName) && FullCustomName.Length < 260)
+                {
+                    //test if a file doesn't already exist with the same name 
+                    if (!System.IO.File.Exists(FullCustomName))
+                    {
                         //test if the file should be renamed
                         if (!IsCopy)
                             System.IO.File.Move(FullRealPath, FullCustomName);
@@ -196,14 +274,36 @@ namespace MusicSort.Models
 
                         return true;
                     }
-                    catch (UnauthorizedAccessException)
+                    //if not, try to replace it
+                    else
                     {
-                        return false;
+                        try
+                        {
+                            System.IO.File.Delete(FullCustomName);
+
+                            //test if the file should be renamed
+                            if (!IsCopy)
+                                System.IO.File.Move(FullRealPath, FullCustomName);
+                            else
+                                System.IO.File.Copy(FullRealPath, FullCustomName);
+
+                            FullRealPath = FullCustomName;
+
+                            return true;
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            return false;
+                        }
                     }
                 }
+                else
+                    return false;
             }
-            else
+            catch (FileNotFoundException)
+            {
                 return false;
+            }
         }
     }
 

@@ -60,18 +60,6 @@ namespace MusicSort.Views
             ShowLines = false;
 
             NodeMouseClick += FolderBrowser_NodeMouseClick;
-            NodeMouseDoubleClick += FolderBrowser_NodeMouseDoubleClick;
-        }
-
-        /// <summary>
-        /// Event triggered when a node is double clicked
-        /// </summary>
-        /// <param name="sender">sender of the event</param>
-        /// <param name="e">arguments of the event</param>
-        private void FolderBrowser_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e) 
-        {
-            SelectNode(e.Node);
-            FolderSelectedEvent?.Invoke(sender, (string)e.Node.Tag); 
         }
 
         /// <summary>
@@ -93,6 +81,9 @@ namespace MusicSort.Views
                     e.Node.Collapse();
                 else
                     e.Node.Expand();
+                
+                SelectNode(e.Node);
+                FolderSelectedEvent?.Invoke(sender, (string)e.Node.Tag);
             }
         }
 
@@ -147,6 +138,7 @@ namespace MusicSort.Views
                     Name = Path.GetFileName(path),
                     Text = Path.GetFileName(path),
                     ImageKey = "Folder",
+                    SelectedImageKey = "Folder",
                     Tag = path
                 };
 

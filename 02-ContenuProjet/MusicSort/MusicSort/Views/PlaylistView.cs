@@ -115,27 +115,6 @@ namespace MusicSort.Views
         }
 
         /// <summary>
-        /// Switches the sorting order of the list
-        /// </summary>
-        public void SwitchSortOrder()
-        {
-            //test if the sorting is done in a descending order
-            if (Sorting == SortOrder.Descending)
-            {
-                Sorting = SortOrder.Ascending;
-                _comparer.IsSortingAscending = true;
-            }
-            //test if the sorting is done in a ascending order
-            else if (Sorting == SortOrder.Ascending)
-            {
-                Sorting = SortOrder.Descending;
-                _comparer.IsSortingAscending = false;
-            }
-
-            Sort();
-        }
-
-        /// <summary>
         /// Gets the fileItems that represents the files given
         /// </summary>
         /// <param name="files">files to find the item corresponding to</param>
@@ -177,11 +156,7 @@ namespace MusicSort.Views
                 FileItem x_ = (FileItem)x;
                 FileItem y_ = (FileItem)y;
 
-                if (IsSortingAscending)
-                    return x_.File.IndexInPlaylist.CompareTo(y_.File.IndexInPlaylist);
-                else
-                    return y_.File.IndexInPlaylist.CompareTo(x_.File.IndexInPlaylist);
-                //return Compare(x_.File.IndexInPlaylist, y_.File.IndexInPlaylist);
+                return x_.File.IndexInPlaylist.CompareTo(y_.File.IndexInPlaylist);
             }
         }
     }

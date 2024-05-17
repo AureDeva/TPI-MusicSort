@@ -51,7 +51,17 @@ namespace MusicSort.Controllers
         /// </summary>
         public void StartPlaylist()
         {
-            throw new NotImplementedException();
+            //test in which order the should be read
+            if (View.PlaylistView.Sorting == SortOrder.Ascending)
+                View.MusicPlayer.PlayFiles(Model.Playlist.ToArray());
+            else
+            {
+                //reverse the playlist
+                List<File> files = new List<File>();
+                files.AddRange(Model.Playlist);
+                files.Reverse();
+                View.MusicPlayer.PlayFiles(files.ToArray());
+            }
         }
 
         /// <summary>
@@ -59,7 +69,7 @@ namespace MusicSort.Controllers
         /// </summary>
         public void StopPlaylist()
         {
-            throw new NotImplementedException();
+            View.MusicPlayer.StopPlaying();
         }
 
         /// <summary>
@@ -68,7 +78,7 @@ namespace MusicSort.Controllers
         /// <param name="file">file to listen to</param>
         public void ListenToFile(File file)
         {
-            throw new NotImplementedException();
+            View.MusicPlayer.PlayFile(file);
         }
 
         /// <summary>
@@ -76,7 +86,9 @@ namespace MusicSort.Controllers
         /// </summary>
         public void SwitchSortingOrder()
         {
-            View.PlaylistView.SwitchSortOrder();
+            Model.InvertIndexes();
+
+            View.PlaylistView.Sort();
         }
 
         /// <summary>
@@ -124,7 +136,8 @@ namespace MusicSort.Controllers
             foreach (File file in files)
             {
                 Model.Playlist.Add(file);
-                file.IndexInPlaylist = Model.Playlist.Count;
+                file.IndexInPlaylist = Model.Playlist.Count - 1;
+                View.applyButton.Enabled = true;
             }
 
             View.SetFileItemsForPlaylistView(Model.Playlist.ToArray());
@@ -141,6 +154,10 @@ namespace MusicSort.Controllers
                 Model.Playlist.Remove(file);
 
             View.SetFileItemsForPlaylistView(Model.Playlist.ToArray());
+
+            //test if the playlist is empty
+            if (Model.Playlist.Count == 0)
+                View.applyButton.Enabled = false;
         }
 
         /// <summary>
@@ -167,12 +184,42 @@ namespace MusicSort.Controllers
                 //test if the highest file has room to go up
                 if (files_[0].IndexInPlaylist > 0) 
                 {
-                    //place the displaced file lower
-                    Model.FindFileByIndex(files_[0].IndexInPlaylist - 1).IndexInPlaylist = files_[files_.Count - 1].IndexInPlaylist;
+                    //files moved by the other files moving
+                    List<Tuple<File, int>> filesToDisplaceWithNewIndex = new List<Tuple<File, int>>();
+
+                    //find the files to displace and displace them
+                    for (int i = 0; i < files_.Count; i++)
+                    {
+                        //find if there is a file before it
+                        if (!files_.Contains(Model.FindFileByIndex(files_[i].IndexInPlaylist - 1)))
+                        {
+                            File fileToDisplace = Model.FindFileByIndex(files_[i].IndexInPlaylist - 1);
+
+                            //search for a new position
+                            for (int ii = files_[i].IndexInPlaylist; ii < Model.Playlist.Count; ii++)
+                            {
+                                //tests if there is a gap for the file
+                                if (!files_.Contains(Model.FindFileByIndex(ii + 1)))
+                                {
+                                    //place in the list of displacement
+                                    filesToDisplaceWithNewIndex.Add(new Tuple<File, int>(fileToDisplace, ii));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    //displace the files
+                    if (filesToDisplaceWithNewIndex.Count > 0)
+                        //displace the files
+                        foreach (Tuple<File, int> displacement in filesToDisplaceWithNewIndex)
+                            displacement.Item1.IndexInPlaylist = displacement.Item2;
 
                     //place the files higher
                     foreach (File file in files_)
-                        file.IndexInPlaylist--; 
+                        file.IndexInPlaylist--;
+
+                    Model.RearrangeList();
                 }
 
                 View.PlaylistView.Sort();
@@ -194,12 +241,42 @@ namespace MusicSort.Controllers
                 //test if the highest file has room to go down
                 if (files_[0].IndexInPlaylist < Model.Playlist[Model.Playlist.Count - 1].IndexInPlaylist)
                 {
-                    //place the displaced file higher
-                    Model.FindFileByIndex(files_[0].IndexInPlaylist + 1).IndexInPlaylist = files_[files_.Count - 1].IndexInPlaylist;
+                    //files moved by the other files moving
+                    List<Tuple<File, int>> filesToDisplaceWithNewIndex = new List<Tuple<File, int>>();
+
+                    //find the files to displace and displace them
+                    for (int i = 0; i < files_.Count; i++)
+                    {
+                        //find if there is a file before it
+                        if (!files_.Contains(Model.FindFileByIndex(files_[i].IndexInPlaylist + 1)))
+                        {
+                            File fileToDisplace = Model.FindFileByIndex(files_[i].IndexInPlaylist + 1);
+
+                            //search for a new position
+                            for (int ii = files_[i].IndexInPlaylist; ii >= 0; ii--)
+                            {
+                                //tests if there is a gap for the file
+                                if (!files_.Contains(Model.FindFileByIndex(ii - 1)))
+                                {
+                                    //place in the list of displacement
+                                    filesToDisplaceWithNewIndex.Add(new Tuple<File, int>(fileToDisplace, ii));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    //displace the files
+                    if (filesToDisplaceWithNewIndex.Count > 0)
+                        //displace the files
+                        foreach (Tuple<File, int> displacement in filesToDisplaceWithNewIndex)
+                            displacement.Item1.IndexInPlaylist = displacement.Item2;
 
                     //place the files higher
                     foreach (File file in files_)
                         file.IndexInPlaylist++;
+
+                    Model.RearrangeList();
                 }
 
                 View.PlaylistView.Sort();
@@ -214,8 +291,9 @@ namespace MusicSort.Controllers
         {
             //ask the user for a new name
             string newName = View.AskForNewName(file);
-            if (!file.SetNewName(newName))
-                View.SendErrorMessage("Erreur de renommage", "Le nom n'est pas valide pour ce fichier.");
+            if (newName != null && newName != "")
+                if (!file.SetNewName(newName))
+                    View.SendErrorMessage("Erreur de renommage", "Le nom n'est pas valide pour ce fichier.");
 
             View.PlaylistView.Refresh();
         }
@@ -323,13 +401,15 @@ namespace MusicSort.Controllers
         public void DisplayGeneralChanges()
         {
             //test if the number and name are set
-            if (Model.NumberDigit > 0 && Model.GeneralName.Length > 0 && Model.IsPrefixActivated)
+            if (Model.NumberDigit > 0 && Model.IsPrefixActivated)
             {
                 Model.SetPrefixFromIndex();
-                Model.DisplayGeneralName();
+
+                if (Model.GeneralName.Length > 0)
+                    Model.DisplayGeneralName();
             }
             else
-                View.SendErrorMessage("Erreur dans l'aperçu des changements", "Une erreur c'est produite lors de l'aperçu des changements!");
+                View.InformUser("Aperçu impossible", "Veuyez ajouter un nombre pour créer un aperçu.");
         }
 
         /// <summary>
@@ -346,45 +426,84 @@ namespace MusicSort.Controllers
          /// </summary>
         public void Apply()
         {
-            //test what is applicable
-            List<Tuple<File, ApplicationError>> testResults = Model.TestForApplication();
-
-            //keep in mind if it is possible to continue 
-            bool canContinue = true;
-
-            //test if there were errors
-            if (testResults.Count > 0)
-                canContinue = View.AskForConfirmation("Problème(s) pour l'application", 
-                    $"Il y aura {testResults.Count} complication durant l'application des changements. \n" +
-                    "Voulez-vous quand même continué?");
-
-            if (canContinue)
+            //test if in the case of a copy or move, the user has selected a destination
+            if (Model.ApplicationMode == ApplicationMode.Rename || ((Model.ApplicationMode == ApplicationMode.RenameAndCopy || Model.ApplicationMode == ApplicationMode.RenameAndMove) && Model.DestinationPath.Length > 0))
             {
-                //apply the changes to each file
-                foreach (File file in Model.Playlist)
+                //display the changes if general changes were done
+                if (Model.IsPrefixActivated && Model.NumberDigit > 0)
+                    DisplayGeneralChanges();
+
+                //ask the user for confirmation
+                if (View.AskForConfirmation("Application des changements", "Voulez-vous vraiment appliquer les changements ?"))
                 {
-                    //find if the file had an error
-                    if (testResults.Exists(r => r.Item1 == file))
+                    //test what is applicable
+                    List<Tuple<File, ApplicationError>> testResults = Model.TestForApplication();
+
+                    //keep in mind if it is possible to continue 
+                    bool canContinue = true;
+
+                    //test if there were errors
+                    if (testResults.Count > 0)
+                        canContinue = View.AskForConfirmation("Problème(s) pour l'application",
+                            $"Il y aura {testResults.Count} complication durant l'application des changements. \n" +
+                            "Voulez-vous quand même continué?");
+
+                    if (canContinue)
                     {
-                        switch (testResults.Find(r => r.Item1 == file).Item2)
+                        //apply the changes to each file
+                        foreach (File file in Model.Playlist)
                         {
-                            case ApplicationError.FileAlreadyExists:
-                                //ask the user for confirmation to replace the file
-                                if (View.AskForConfirmation("Doublon", $"Un fichier du nom : {file.FullCustomName} existe déjà. \nVoulez-vous le remplacer ?"))
-                                    if (!file.ApplyChanges())
-                                        View.SendErrorMessage("Erreur", $"Une erreur s'est produite lors de l'application des changements sur le fichier : \n {file.RealPath}");
-                                break;
-                            case ApplicationError.ActionUnauthorized:
-                                View.SendErrorMessage("Erreur", $"Action non-autorisée sur le fichier : \n {file.RealPath}");
-                                break;
+                            //find if the file had an error
+                            if (testResults.Exists(r => r.Item1 == file))
+                            {
+                                switch (testResults.Find(r => r.Item1 == file).Item2)
+                                {
+                                    case ApplicationError.FileAlreadyExists:
+                                        //ask the user for confirmation to replace the file
+                                        if (View.AskForConfirmation("Doublon", $"Un fichier du nom : \n{file.FullCustomName}\n existe déjà. \nVoulez-vous le remplacer ?"))
+                                            if (!file.ApplyChanges())
+                                                View.SendErrorMessage("Erreur", $"Une erreur s'est produite lors de l'application des changements sur le fichier : \n {file.RealPath}");
+                                        break;
+                                    case ApplicationError.ActionUnauthorized:
+                                        View.SendErrorMessage("Erreur", $"Action non-autorisée sur le fichier : \n {file.RealPath}");
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                if (!file.ApplyChanges())
+                                    View.SendErrorMessage("Erreur", $"Une erreur s'est produite lors de l'application des changements sur le fichier : \n {file.RealPath}");
+                            }
                         }
-                    }
-                    else
-                    {
-                        if (!file.ApplyChanges())
-                            View.SendErrorMessage("Erreur", $"Une erreur s'est produite lors de l'application des changements sur le fichier : \n {file.RealPath}");
+
+                        View.SetFileItemsForFolderListView(Model.GetFilesFromDirectory(Model.SelectedPath));
                     }
                 }
+            }
+            else
+                View.InformUser("Application impossible", "Dans le cas d'une copie et d'un déplacement, vous devez choisir un dossier de déplacement.");
+        }
+
+        /// <summary>
+        /// Clean the app before closing the application
+        /// </summary>
+        public void Exit(out bool cancel)
+        {
+            //ask the user if the form can really be closed if there are elements in the playlist
+            if (Model.Playlist.Count > 0)
+            {
+                if (View.AskForConfirmation("Fermeture de l'application", "Voulez-vous vraiment quitter l'application ?"))
+                {
+                    File.CleanTempFilesDirectory();
+                    cancel = false;
+                }
+                else
+                    cancel = true;
+            }
+            else
+            {
+                File.CleanTempFilesDirectory();
+                cancel = false;
             }
         }
     }

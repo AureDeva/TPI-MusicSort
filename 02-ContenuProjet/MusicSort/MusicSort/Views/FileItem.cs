@@ -36,7 +36,7 @@ namespace MusicSort.Views
         /// <summary>
         /// Type of the item
         /// </summary>
-        public FileItemType ItemType { get; private set; }
+        public FileItemType ItemType { get; set; }
 
         /// <summary>
         /// Method to trigger when wanting to play the file
@@ -59,8 +59,8 @@ namespace MusicSort.Views
         /// <param name="placeHigher">Method to trigger when wanting to place the file higher in the playlist</param>
         /// <param name="placeLower">Method to trigger when wanting to place the file lower in the playlist</param>
         /// <param name="sendToPlaylist">Method to trigger when wanting to send the file to the playlist</param>
-        public FileItem(File file, DoActionHandler reset, DoActionHandler play, DoActionHandler rename, DoActionHandler removeFromPlaylist, 
-            DoActionHandler placeHigher, DoActionHandler placeLower, DoActionHandler sendToPlaylist)
+        public FileItem(File file, DoActionHandler reset, DoActionHandler play, DoActionHandler rename, DoActionHandler removeFromPlaylist,
+            DoActionHandler placeHigher, DoActionHandler placeLower, DoActionHandler sendToPlaylist, FileItemType type)
         {
             File = file;
             Play = play;
@@ -69,6 +69,7 @@ namespace MusicSort.Views
             FolderFileMenu = new FolderFileItemMenu(file, sendToPlaylist, play);
             PlaylistMenu = new PlaylistItemMenu(file, reset, play, rename, removeFromPlaylist, placeHigher, placeLower);
             File.FileInfoChangedEvent += File_FileInfoChangedEvent;
+            ItemType = type;
 
             SubItems.Add(ItemExtension);
         }
@@ -83,22 +84,15 @@ namespace MusicSort.Views
         }
 
         /// <summary>
-        /// Switch the type of the item to the one given
-        /// </summary>
-        /// <param name="itemType">new type</param>
-        public void SwitchItemType(FileItemType itemType)
-        {
-            //test if the type is different than the current one
-            if (itemType != ItemType)
-                ItemType = itemType;
-        }
-
-        /// <summary>
         /// Refreshes the name of the file
         /// </summary>
         public void RefreshName()
         {
-            Text = File.DisplayName;
+            if (ItemType == FileItemType.Playlist)
+                Text = File.DisplayName;
+            else if (ItemType == FileItemType.FolderFile)
+                Text = File.RealName;
+
             ItemExtension.Text = File.RealExtension;
         }
     }

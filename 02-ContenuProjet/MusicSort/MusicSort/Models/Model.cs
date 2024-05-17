@@ -85,7 +85,21 @@ namespace MusicSort.Models
             StartNumber = 0;
             IsPrefixActivated = false;
             ApplicationMode = ApplicationMode.Rename;
-            SupportedTypes = new string[] { "mp3", "wma", "flac"};
+            SupportedTypes = new string[] { "mp3", "wma", "flac", "aac", "wav", "midi", "asf" };
+        }
+
+        /// <summary>
+        /// Inverts the files' indexes
+        /// </summary>
+        public void InvertIndexes()
+        {
+            //ensure the order of the playlist
+            RearrangeList();
+
+            //reverse the list
+            Playlist.Reverse();
+
+            UpdateIndexes();
         }
 
         /// <summary>
@@ -96,9 +110,25 @@ namespace MusicSort.Models
             //sort the list
             Playlist.Sort((f1, f2) => f1.CustomName.CompareTo(f2.CustomName));
 
+            UpdateIndexes();
+        }
+
+        /// <summary>
+        /// Updates the indexes of the files
+        /// </summary>
+        public void UpdateIndexes()
+        {
             //update the indexes
             for (int i = 0; i < Playlist.Count; i++)
                 Playlist[i].IndexInPlaylist = i;
+        }
+
+        /// <summary>
+        /// Rearrange the list in function of the indexes
+        /// </summary>
+        public void RearrangeList()
+        {
+            Playlist.Sort((f1, f2) => f1.IndexInPlaylist.CompareTo(f2.IndexInPlaylist));
         }
 
         /// <summary>
@@ -153,10 +183,19 @@ namespace MusicSort.Models
                 {
                     //get the files of the directory and filter them
                     List<File> files = new List<File>();
+
                     foreach (string file in Directory.GetFiles(path))
-                        //filter the files
-                        if (SupportedTypes.Contains(file.Substring(file.LastIndexOf('.') + 1).ToLower()))
-                            files.Add(new File(file));
+                    {
+                        //test if the file is already in the playlist
+                        if (Playlist.Exists(f => f.FullRealPath == file))
+                            files.Add(Playlist.Find(f => f.FullRealPath == file));
+                        else
+                        {
+                            //filter the files
+                            if (SupportedTypes.Contains(file.Substring(file.LastIndexOf('.') + 1).ToLower()))
+                                files.Add(new File(file));
+                        }
+                    }
 
                     return files.ToArray();
                 }
@@ -384,6 +423,7 @@ namespace MusicSort.Models
                     //try to parse the given number
                     if (Int32.TryParse(number, out parseResult))
                     {
+                        StartNumber = parseResult;
                         NumberDigit = number.Length;
                         return true;
                     }

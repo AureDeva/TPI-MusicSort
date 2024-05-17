@@ -54,9 +54,79 @@ namespace MusicSort.Views
         {
             InitializeComponent();
 
+            FormClosing += ViewForm_FormClosing;
+
+            //set up the folder browser
             FolderBrowser.SetBaseDirectory();
+
+            //set up the playlist
             PlaylistView.ColumnClick += (e, arg) => Controller.SwitchSortingOrder();
             PlaylistView.ItemSelectionChanged += PlaylistView_ItemSelectionChanged;
+
+            //set up the music player
+            MusicPlayer = new PlaylistPlayer();
+            Controls.Add(MusicPlayer);
+            MusicPlayer.OcxState = ((System.Windows.Forms.AxHost.State)(new System.ComponentModel.ComponentResourceManager(typeof(ViewForm)).GetObject("MusicPlayer.OcxState")));
+            MusicPlayer.MediaChange += MusicPlayer_MediaChange;
+
+
+            //create the toolTip
+            ToolTip toolTip = new ToolTip()
+            {
+                AutoPopDelay = 5000,
+                InitialDelay = 1000,
+                ReshowDelay = 500,
+                ShowAlways = true
+            };
+
+            //set the tips
+            toolTip.SetToolTip(_baseDirectoryButton, "Choix du dossier de base.");
+            toolTip.SetToolTip(_addAllToPlaylistButton, "Ajout de tous les fichiers du dossier dans la playlist.");
+            toolTip.SetToolTip(_addToPlaylistButton, "Ajout des fichiers sélectionnés du dossier dans la playlist.");
+            toolTip.SetToolTip(_removeFromPlaylistButton, "Sort les fichiers sélectionnés de la playlist.");
+            toolTip.SetToolTip(_removeAllFromPlaylistButton, "Sort tous les fichiers de la playlist.");
+            toolTip.SetToolTip(_sortButton, "Trie les fichiers dans l'ordre alphabétique (sans prendre en compte le numéro ajouté).");
+            toolTip.SetToolTip(_resetAllButton, "Réinitialise tous les fichiers de la playlist.");
+            toolTip.SetToolTip(_playButton, "Lance la lecture de la playlist.");
+            toolTip.SetToolTip(_stopButton, "Stop la lecture.");
+            toolTip.SetToolTip(_placeUpButton, "Monte les fichiers sélectionnés dans la playlist.");
+            toolTip.SetToolTip(_placeDownButton, "Descend les fichiers sélectionnés dans la playlist.");
+            toolTip.SetToolTip(generalNameTextBox, "Donne un nom général à tous les fichiers de la playlist.");
+            toolTip.SetToolTip(startNumberTextBox, "Premier numéro utilisé dans la numérotation (garde en mémoire le nombre chiffres).");
+            toolTip.SetToolTip(_fileNumberingCheckBox, "Active ou désactive la numérotation des fichiers de la playlist (nécessaire pour le nom général).");
+            toolTip.SetToolTip(_renameModeRadioButton, "Mode qui, lors de l'application, renomme les fichiers originaux selon les noms donnés.");
+            toolTip.SetToolTip(_renameAndCopyModeRadioButton, "Mode qui, lors de l'application, copie et renomme les fichiers originaux selon les noms et la destination donnés.");
+            toolTip.SetToolTip(_renameAndMoveModeRadioButton, "Mode qui, lors de l'application, déplace et renomme les fichiers originaux selon les noms et la destination donnés.");
+            toolTip.SetToolTip(_destinationButton, "Choix du dossier de destination.");
+            toolTip.SetToolTip(_displayButton, "Permet d'apercevoir les changements apportés par la numéroation et le nom général.");
+            toolTip.SetToolTip(applyButton, "Applique les changements.");
+
+        }
+
+        /// <summary>
+        /// Event triggered when the media is changed
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void MusicPlayer_MediaChange(object sender, AxWMPLib._WMPOCXEvents_MediaChangeEvent e)
+        {
+            //test if there is a media currently playing
+            if (MusicPlayer.currentMedia != null)
+                _filePlayingLabel.Text = MusicPlayer.currentMedia.name;
+            else
+                _filePlayingLabel.Text = "";
+        }
+
+        /// <summary>
+        /// Event triggered when the form is closing
+        /// </summary>
+        /// <param name="sender">sender of the event</param>
+        /// <param name="e">arguments of the event</param>
+        private void ViewForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            bool cancel = false;
+            Controller.Exit(out cancel);
+            e.Cancel = cancel;
         }
 
         /// <summary>
@@ -109,7 +179,8 @@ namespace MusicSort.Views
                             new DoActionHandler(f => Controller.RemoveFilesFromPlaylist(new File[] { f })),
                             new DoActionHandler(f => Controller.PlaceFilesHigher(new File[] { f })),
                             new DoActionHandler(f => Controller.PlaceFilesLower(new File[] { f })),
-                            new DoActionHandler(f => Controller.SendFilesToPlaylist(new File[] { f }))
+                            new DoActionHandler(f => Controller.SendFilesToPlaylist(new File[] { f })),
+                            FileItemType.FolderFile
                             )
                         );
             }
@@ -147,7 +218,8 @@ namespace MusicSort.Views
                             new DoActionHandler(f => Controller.RemoveFilesFromPlaylist(new File[] { f })),
                             new DoActionHandler(f => Controller.PlaceFilesHigher(new File[] { f })),
                             new DoActionHandler(f => Controller.PlaceFilesLower(new File[] { f })),
-                            new DoActionHandler(f => Controller.SendFilesToPlaylist(new File[] { f }))
+                            new DoActionHandler(f => Controller.SendFilesToPlaylist(new File[] { f })),
+                            FileItemType.Playlist
                             )
                         );
             }
@@ -334,6 +406,7 @@ namespace MusicSort.Views
                 Controller.ActivateNumbering();
                 generalNameTextBox.Enabled = true;
                 startNumberTextBox.Enabled = true;
+                _displayButton.Enabled = true;
             }
             //if the box was unchecked
             else
@@ -341,6 +414,7 @@ namespace MusicSort.Views
                 Controller.DeactivateNumbering();
                 generalNameTextBox.Enabled = false;
                 startNumberTextBox.Enabled = false;
+                _displayButton.Enabled = false;
             }
         }
 
