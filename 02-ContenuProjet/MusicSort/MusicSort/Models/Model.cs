@@ -3,16 +3,13 @@
 ///Date : 08.05.2024
 ///Description : Model of the application
 
+using MusicSort.Controllers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MusicSort.Controllers;
 using System.IO;
-using System.Windows.Forms;
-using System.Text.RegularExpressions;
+using System.Linq;
 using System.Security.Permissions;
+using System.Text.RegularExpressions;
 
 namespace MusicSort.Models
 {
@@ -154,13 +151,19 @@ namespace MusicSort.Models
         public bool SetNewDestination(string path)
         {
             //test if the directory exists
-            if (path != null && Directory.Exists(path))
+            if (path != null && Directory.Exists(path) && path.Length > 0)
             {
                 DestinationPath = path;
 
                 //set the paths for the files
                 foreach (File file in Playlist)
                     file.SetNewPath(path);
+
+                return true;
+            }
+            else if (path.Length == 0)
+            {
+                DestinationPath = "";
 
                 return true;
             }
@@ -307,7 +310,7 @@ namespace MusicSort.Models
                     break;
 
                 case ApplicationMode.RenameAndCopy:
-                    Playlist.ForEach(f => 
+                    Playlist.ForEach(f =>
                     {
                         f.SetNewPath(DestinationPath);
                         f.IsCopy = true;

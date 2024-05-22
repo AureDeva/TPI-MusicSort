@@ -29,9 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ViewForm));
             this.baseDirectoryTextBox = new System.Windows.Forms.TextBox();
             this.openFolderLabel = new System.Windows.Forms.Label();
             this._folderFileChoicePanel = new System.Windows.Forms.Panel();
+            this._folderBrowser = new MusicSort.Views.FolderBrowser();
+            this._folderFileListView = new MusicSort.Views.FolderFileListView();
             this._addToPlaylistButton = new System.Windows.Forms.Button();
             this._addAllToPlaylistButton = new System.Windows.Forms.Button();
             this._selectionLabel = new System.Windows.Forms.Label();
@@ -40,6 +43,7 @@
             this._playlistPanel = new System.Windows.Forms.Panel();
             this._placeDownButton = new System.Windows.Forms.Button();
             this._placeUpButton = new System.Windows.Forms.Button();
+            this._playlistView = new MusicSort.Views.PlaylistView();
             this._stopButton = new System.Windows.Forms.Button();
             this._playButton = new System.Windows.Forms.Button();
             this._resetAllButton = new System.Windows.Forms.Button();
@@ -59,7 +63,7 @@
             this._applicationModeGroupBox = new System.Windows.Forms.GroupBox();
             this._renameAndMoveModeRadioButton = new System.Windows.Forms.RadioButton();
             this._renameAndCopyModeRadioButton = new System.Windows.Forms.RadioButton();
-            this._renameModeRadioButton = new System.Windows.Forms.RadioButton();
+            this.renameModeRadioButton = new System.Windows.Forms.RadioButton();
             this._fileNumberingCheckBox = new System.Windows.Forms.CheckBox();
             this.startNumberTextBox = new System.Windows.Forms.TextBox();
             this._startNumberLabel = new System.Windows.Forms.Label();
@@ -67,9 +71,6 @@
             this._generalNameLabel = new System.Windows.Forms.Label();
             this.generalNameTextBox = new System.Windows.Forms.TextBox();
             this._filePlayingLabel = new System.Windows.Forms.Label();
-            this._playlistView = new MusicSort.Views.PlaylistView();
-            this._folderBrowser = new MusicSort.Views.FolderBrowser();
-            this._folderFileListView = new MusicSort.Views.FolderFileListView();
             this._folderFileChoicePanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this._openFolderPictureBox)).BeginInit();
             this._playlistPanel.SuspendLayout();
@@ -109,12 +110,39 @@
             this._folderFileChoicePanel.Controls.Add(this._baseDirectoryButton);
             this._folderFileChoicePanel.Location = new System.Drawing.Point(14, 12);
             this._folderFileChoicePanel.Name = "_folderFileChoicePanel";
-            this._folderFileChoicePanel.Size = new System.Drawing.Size(539, 547);
+            this._folderFileChoicePanel.Size = new System.Drawing.Size(539, 453);
             this._folderFileChoicePanel.TabIndex = 7;
+            // 
+            // _folderBrowser
+            // 
+            this._folderBrowser.ImageIndex = 0;
+            this._folderBrowser.Location = new System.Drawing.Point(23, 80);
+            this._folderBrowser.MaximumSize = new System.Drawing.Size(261, 434);
+            this._folderBrowser.Name = "_folderBrowser";
+            this._folderBrowser.SelectedImageIndex = 0;
+            this._folderBrowser.ShowLines = false;
+            this._folderBrowser.ShowPlusMinus = false;
+            this._folderBrowser.ShowRootLines = false;
+            this._folderBrowser.Size = new System.Drawing.Size(261, 362);
+            this._folderBrowser.TabIndex = 11;
+            this._folderBrowser.FolderSelectedEvent += new MusicSort.Views.PathSelectedEventHandler(this.FolderBrowser_FolderSelectedEvent);
+            // 
+            // _folderFileListView
+            // 
+            this._folderFileListView.HideSelection = false;
+            this._folderFileListView.Location = new System.Drawing.Point(316, 80);
+            this._folderFileListView.MaximumSize = new System.Drawing.Size(210, 350);
+            this._folderFileListView.Name = "_folderFileListView";
+            this._folderFileListView.Play = null;
+            this._folderFileListView.Reset = null;
+            this._folderFileListView.Size = new System.Drawing.Size(210, 333);
+            this._folderFileListView.TabIndex = 10;
+            this._folderFileListView.UseCompatibleStateImageBehavior = false;
+            this._folderFileListView.View = System.Windows.Forms.View.Details;
             // 
             // _addToPlaylistButton
             // 
-            this._addToPlaylistButton.Location = new System.Drawing.Point(451, 436);
+            this._addToPlaylistButton.Location = new System.Drawing.Point(451, 419);
             this._addToPlaylistButton.Name = "_addToPlaylistButton";
             this._addToPlaylistButton.Size = new System.Drawing.Size(75, 23);
             this._addToPlaylistButton.TabIndex = 9;
@@ -124,7 +152,7 @@
             // 
             // _addAllToPlaylistButton
             // 
-            this._addAllToPlaylistButton.Location = new System.Drawing.Point(316, 436);
+            this._addAllToPlaylistButton.Location = new System.Drawing.Point(316, 419);
             this._addAllToPlaylistButton.Name = "_addAllToPlaylistButton";
             this._addAllToPlaylistButton.Size = new System.Drawing.Size(75, 23);
             this._addAllToPlaylistButton.TabIndex = 8;
@@ -165,6 +193,7 @@
             // 
             // _playlistPanel
             // 
+            this._playlistPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this._playlistPanel.Controls.Add(this._placeDownButton);
             this._playlistPanel.Controls.Add(this._placeUpButton);
             this._playlistPanel.Controls.Add(this._playlistView);
@@ -179,13 +208,16 @@
             this._playlistPanel.Controls.Add(this._selectedFilePictureBox);
             this._playlistPanel.Location = new System.Drawing.Point(578, 12);
             this._playlistPanel.Name = "_playlistPanel";
-            this._playlistPanel.Size = new System.Drawing.Size(242, 547);
+            this._playlistPanel.Size = new System.Drawing.Size(242, 453);
             this._playlistPanel.TabIndex = 8;
             // 
             // _placeDownButton
             // 
+            this._placeDownButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this._placeDownButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._placeDownButton.Location = new System.Drawing.Point(111, 483);
+            this._placeDownButton.Location = new System.Drawing.Point(111, 408);
+            this._placeDownButton.MaximumSize = new System.Drawing.Size(20, 34);
+            this._placeDownButton.MinimumSize = new System.Drawing.Size(20, 34);
             this._placeDownButton.Name = "_placeDownButton";
             this._placeDownButton.Size = new System.Drawing.Size(20, 34);
             this._placeDownButton.TabIndex = 18;
@@ -195,8 +227,11 @@
             // 
             // _placeUpButton
             // 
+            this._placeUpButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this._placeUpButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._placeUpButton.Location = new System.Drawing.Point(111, 436);
+            this._placeUpButton.Location = new System.Drawing.Point(111, 361);
+            this._placeUpButton.MaximumSize = new System.Drawing.Size(20, 34);
+            this._placeUpButton.MinimumSize = new System.Drawing.Size(20, 34);
             this._placeUpButton.Name = "_placeUpButton";
             this._placeUpButton.Size = new System.Drawing.Size(20, 34);
             this._placeUpButton.TabIndex = 17;
@@ -204,9 +239,25 @@
             this._placeUpButton.UseVisualStyleBackColor = true;
             this._placeUpButton.Click += new System.EventHandler(this.PlaceUpButton_Click);
             // 
+            // _playlistView
+            // 
+            this._playlistView.HideSelection = false;
+            this._playlistView.Location = new System.Drawing.Point(14, 79);
+            this._playlistView.MaximumSize = new System.Drawing.Size(210, 350);
+            this._playlistView.Name = "_playlistView";
+            this._playlistView.Play = null;
+            this._playlistView.Size = new System.Drawing.Size(210, 276);
+            this._playlistView.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this._playlistView.TabIndex = 16;
+            this._playlistView.UseCompatibleStateImageBehavior = false;
+            this._playlistView.View = System.Windows.Forms.View.Details;
+            // 
             // _stopButton
             // 
-            this._stopButton.Location = new System.Drawing.Point(149, 494);
+            this._stopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this._stopButton.Location = new System.Drawing.Point(149, 361);
+            this._stopButton.MaximumSize = new System.Drawing.Size(75, 23);
+            this._stopButton.MinimumSize = new System.Drawing.Size(75, 23);
             this._stopButton.Name = "_stopButton";
             this._stopButton.Size = new System.Drawing.Size(75, 23);
             this._stopButton.TabIndex = 15;
@@ -216,7 +267,10 @@
             // 
             // _playButton
             // 
-            this._playButton.Location = new System.Drawing.Point(14, 494);
+            this._playButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._playButton.Location = new System.Drawing.Point(14, 361);
+            this._playButton.MaximumSize = new System.Drawing.Size(75, 23);
+            this._playButton.MinimumSize = new System.Drawing.Size(75, 23);
             this._playButton.Name = "_playButton";
             this._playButton.Size = new System.Drawing.Size(75, 23);
             this._playButton.TabIndex = 14;
@@ -226,8 +280,11 @@
             // 
             // _resetAllButton
             // 
+            this._resetAllButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this._resetAllButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this._resetAllButton.Location = new System.Drawing.Point(149, 465);
+            this._resetAllButton.Location = new System.Drawing.Point(149, 390);
+            this._resetAllButton.MaximumSize = new System.Drawing.Size(75, 23);
+            this._resetAllButton.MinimumSize = new System.Drawing.Size(75, 23);
             this._resetAllButton.Name = "_resetAllButton";
             this._resetAllButton.Size = new System.Drawing.Size(75, 23);
             this._resetAllButton.TabIndex = 13;
@@ -237,7 +294,10 @@
             // 
             // _sortButton
             // 
-            this._sortButton.Location = new System.Drawing.Point(14, 465);
+            this._sortButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._sortButton.Location = new System.Drawing.Point(14, 390);
+            this._sortButton.MaximumSize = new System.Drawing.Size(75, 23);
+            this._sortButton.MinimumSize = new System.Drawing.Size(75, 23);
             this._sortButton.Name = "_sortButton";
             this._sortButton.Size = new System.Drawing.Size(75, 23);
             this._sortButton.TabIndex = 12;
@@ -247,7 +307,10 @@
             // 
             // _removeAllFromPlaylistButton
             // 
-            this._removeAllFromPlaylistButton.Location = new System.Drawing.Point(149, 436);
+            this._removeAllFromPlaylistButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this._removeAllFromPlaylistButton.Location = new System.Drawing.Point(149, 419);
+            this._removeAllFromPlaylistButton.MaximumSize = new System.Drawing.Size(75, 23);
+            this._removeAllFromPlaylistButton.MinimumSize = new System.Drawing.Size(75, 23);
             this._removeAllFromPlaylistButton.Name = "_removeAllFromPlaylistButton";
             this._removeAllFromPlaylistButton.Size = new System.Drawing.Size(75, 23);
             this._removeAllFromPlaylistButton.TabIndex = 11;
@@ -257,7 +320,10 @@
             // 
             // _removeFromPlaylistButton
             // 
-            this._removeFromPlaylistButton.Location = new System.Drawing.Point(14, 436);
+            this._removeFromPlaylistButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this._removeFromPlaylistButton.Location = new System.Drawing.Point(14, 419);
+            this._removeFromPlaylistButton.MaximumSize = new System.Drawing.Size(75, 23);
+            this._removeFromPlaylistButton.MinimumSize = new System.Drawing.Size(75, 23);
             this._removeFromPlaylistButton.Name = "_removeFromPlaylistButton";
             this._removeFromPlaylistButton.Size = new System.Drawing.Size(75, 23);
             this._removeFromPlaylistButton.TabIndex = 10;
@@ -280,9 +346,9 @@
             this.selectedFileLabel.AutoSize = true;
             this.selectedFileLabel.Location = new System.Drawing.Point(44, 56);
             this.selectedFileLabel.Name = "selectedFileLabel";
-            this.selectedFileLabel.Size = new System.Drawing.Size(97, 13);
+            this.selectedFileLabel.Size = new System.Drawing.Size(145, 13);
             this.selectedFileLabel.TabIndex = 8;
-            this.selectedFileLabel.Text = "Fichier Sélectionné";
+            this.selectedFileLabel.Text = "Dossier du fichier sélectionné";
             // 
             // _selectedFilePictureBox
             // 
@@ -296,6 +362,7 @@
             // 
             // _applicationPanel
             // 
+            this._applicationPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this._applicationPanel.Controls.Add(this.numberErrorLabel);
             this._applicationPanel.Controls.Add(this._destinationButton);
             this._applicationPanel.Controls.Add(this.applyButton);
@@ -309,7 +376,7 @@
             this._applicationPanel.Controls.Add(this.generalNameErrorLabel);
             this._applicationPanel.Controls.Add(this._generalNameLabel);
             this._applicationPanel.Controls.Add(this.generalNameTextBox);
-            this._applicationPanel.Location = new System.Drawing.Point(14, 639);
+            this._applicationPanel.Location = new System.Drawing.Point(15, 544);
             this._applicationPanel.Name = "_applicationPanel";
             this._applicationPanel.Size = new System.Drawing.Size(806, 107);
             this._applicationPanel.TabIndex = 10;
@@ -337,7 +404,7 @@
             // applyButton
             // 
             this.applyButton.Enabled = false;
-            this.applyButton.Location = new System.Drawing.Point(713, 61);
+            this.applyButton.Location = new System.Drawing.Point(713, 76);
             this.applyButton.Name = "applyButton";
             this.applyButton.Size = new System.Drawing.Size(75, 23);
             this.applyButton.TabIndex = 12;
@@ -348,7 +415,7 @@
             // _displayButton
             // 
             this._displayButton.Enabled = false;
-            this._displayButton.Location = new System.Drawing.Point(630, 61);
+            this._displayButton.Location = new System.Drawing.Point(630, 76);
             this._displayButton.Name = "_displayButton";
             this._displayButton.Size = new System.Drawing.Size(75, 23);
             this._displayButton.TabIndex = 11;
@@ -378,7 +445,7 @@
             // 
             this._applicationModeGroupBox.Controls.Add(this._renameAndMoveModeRadioButton);
             this._applicationModeGroupBox.Controls.Add(this._renameAndCopyModeRadioButton);
-            this._applicationModeGroupBox.Controls.Add(this._renameModeRadioButton);
+            this._applicationModeGroupBox.Controls.Add(this.renameModeRadioButton);
             this._applicationModeGroupBox.Location = new System.Drawing.Point(339, 11);
             this._applicationModeGroupBox.Name = "_applicationModeGroupBox";
             this._applicationModeGroupBox.Size = new System.Drawing.Size(200, 82);
@@ -393,7 +460,6 @@
             this._renameAndMoveModeRadioButton.Name = "_renameAndMoveModeRadioButton";
             this._renameAndMoveModeRadioButton.Size = new System.Drawing.Size(132, 17);
             this._renameAndMoveModeRadioButton.TabIndex = 9;
-            this._renameAndMoveModeRadioButton.TabStop = true;
             this._renameAndMoveModeRadioButton.Text = "Renommer et déplacer";
             this._renameAndMoveModeRadioButton.UseVisualStyleBackColor = true;
             this._renameAndMoveModeRadioButton.CheckedChanged += new System.EventHandler(this.RenameAndMoveModeRadioButton_CheckedChanged);
@@ -405,23 +471,22 @@
             this._renameAndCopyModeRadioButton.Name = "_renameAndCopyModeRadioButton";
             this._renameAndCopyModeRadioButton.Size = new System.Drawing.Size(120, 17);
             this._renameAndCopyModeRadioButton.TabIndex = 8;
-            this._renameAndCopyModeRadioButton.TabStop = true;
             this._renameAndCopyModeRadioButton.Text = "Renommer et copier";
             this._renameAndCopyModeRadioButton.UseVisualStyleBackColor = true;
             this._renameAndCopyModeRadioButton.CheckedChanged += new System.EventHandler(this.RenameAndCopyModeRadioButton_CheckedChanged);
             // 
-            // _renameModeRadioButton
+            // renameModeRadioButton
             // 
-            this._renameModeRadioButton.AutoSize = true;
-            this._renameModeRadioButton.Checked = true;
-            this._renameModeRadioButton.Location = new System.Drawing.Point(6, 19);
-            this._renameModeRadioButton.Name = "_renameModeRadioButton";
-            this._renameModeRadioButton.Size = new System.Drawing.Size(76, 17);
-            this._renameModeRadioButton.TabIndex = 7;
-            this._renameModeRadioButton.TabStop = true;
-            this._renameModeRadioButton.Text = "Renommer";
-            this._renameModeRadioButton.UseVisualStyleBackColor = true;
-            this._renameModeRadioButton.CheckedChanged += new System.EventHandler(this.RenameModeRadioButton_CheckedChanged);
+            this.renameModeRadioButton.AutoSize = true;
+            this.renameModeRadioButton.Checked = true;
+            this.renameModeRadioButton.Location = new System.Drawing.Point(6, 19);
+            this.renameModeRadioButton.Name = "renameModeRadioButton";
+            this.renameModeRadioButton.Size = new System.Drawing.Size(76, 17);
+            this.renameModeRadioButton.TabIndex = 7;
+            this.renameModeRadioButton.TabStop = true;
+            this.renameModeRadioButton.Text = "Renommer";
+            this.renameModeRadioButton.UseVisualStyleBackColor = true;
+            this.renameModeRadioButton.CheckedChanged += new System.EventHandler(this.RenameModeRadioButton_CheckedChanged);
             // 
             // _fileNumberingCheckBox
             // 
@@ -482,53 +547,10 @@
             // _filePlayingLabel
             // 
             this._filePlayingLabel.AutoSize = true;
-            this._filePlayingLabel.Location = new System.Drawing.Point(12, 562);
+            this._filePlayingLabel.Location = new System.Drawing.Point(35, 468);
             this._filePlayingLabel.Name = "_filePlayingLabel";
             this._filePlayingLabel.Size = new System.Drawing.Size(0, 13);
             this._filePlayingLabel.TabIndex = 11;
-            // 
-            // _playlistView
-            // 
-            this._playlistView.HideSelection = false;
-            this._playlistView.Location = new System.Drawing.Point(14, 79);
-            this._playlistView.MaximumSize = new System.Drawing.Size(210, 350);
-            this._playlistView.MinimumSize = new System.Drawing.Size(210, 350);
-            this._playlistView.Name = "_playlistView";
-            this._playlistView.Play = null;
-            this._playlistView.Size = new System.Drawing.Size(210, 350);
-            this._playlistView.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this._playlistView.TabIndex = 16;
-            this._playlistView.UseCompatibleStateImageBehavior = false;
-            this._playlistView.View = System.Windows.Forms.View.Details;
-            // 
-            // _folderBrowser
-            // 
-            this._folderBrowser.ImageIndex = 0;
-            this._folderBrowser.Location = new System.Drawing.Point(23, 80);
-            this._folderBrowser.MaximumSize = new System.Drawing.Size(261, 434);
-            this._folderBrowser.MinimumSize = new System.Drawing.Size(261, 434);
-            this._folderBrowser.Name = "_folderBrowser";
-            this._folderBrowser.SelectedImageIndex = 0;
-            this._folderBrowser.ShowLines = false;
-            this._folderBrowser.ShowPlusMinus = false;
-            this._folderBrowser.ShowRootLines = false;
-            this._folderBrowser.Size = new System.Drawing.Size(261, 434);
-            this._folderBrowser.TabIndex = 11;
-            this._folderBrowser.FolderSelectedEvent += new MusicSort.Views.PathSelectedEventHandler(this.FolderBrowser_FolderSelectedEvent);
-            // 
-            // _folderFileListView
-            // 
-            this._folderFileListView.HideSelection = false;
-            this._folderFileListView.Location = new System.Drawing.Point(316, 80);
-            this._folderFileListView.MaximumSize = new System.Drawing.Size(210, 350);
-            this._folderFileListView.MinimumSize = new System.Drawing.Size(210, 350);
-            this._folderFileListView.Name = "_folderFileListView";
-            this._folderFileListView.Play = null;
-            this._folderFileListView.Reset = null;
-            this._folderFileListView.Size = new System.Drawing.Size(210, 350);
-            this._folderFileListView.TabIndex = 10;
-            this._folderFileListView.UseCompatibleStateImageBehavior = false;
-            this._folderFileListView.View = System.Windows.Forms.View.Details;
             // 
             // ViewForm
             // 
@@ -536,15 +558,15 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this._resetAllButton;
-            this.ClientSize = new System.Drawing.Size(837, 758);
+            this.ClientSize = new System.Drawing.Size(837, 663);
             this.Controls.Add(this._filePlayingLabel);
             this.Controls.Add(this._applicationPanel);
             this.Controls.Add(this._playlistPanel);
             this.Controls.Add(this._folderFileChoicePanel);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ViewForm";
-            this.ShowIcon = false;
             this.Text = "MusicSort";
             this._folderFileChoicePanel.ResumeLayout(false);
             this._folderFileChoicePanel.PerformLayout();
@@ -587,7 +609,6 @@
         private System.Windows.Forms.GroupBox _applicationModeGroupBox;
         private System.Windows.Forms.RadioButton _renameAndMoveModeRadioButton;
         private System.Windows.Forms.RadioButton _renameAndCopyModeRadioButton;
-        private System.Windows.Forms.RadioButton _renameModeRadioButton;
         private System.Windows.Forms.CheckBox _fileNumberingCheckBox;
         private System.Windows.Forms.Label _startNumberLabel;
         private System.Windows.Forms.Button _destinationButton;
@@ -603,6 +624,7 @@
         public System.Windows.Forms.TextBox startNumberTextBox;
         private System.Windows.Forms.Label _filePlayingLabel;
         public System.Windows.Forms.Button applyButton;
+        public System.Windows.Forms.RadioButton renameModeRadioButton;
     }
 }
 

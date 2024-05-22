@@ -37,6 +37,7 @@
             // 
             // CancelButton_
             // 
+            this.CancelButton_.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.CancelButton_.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.CancelButton_.Location = new System.Drawing.Point(331, 88);
             this.CancelButton_.Name = "CancelButton_";
@@ -48,6 +49,7 @@
             // 
             // ApplyButton
             // 
+            this.ApplyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.ApplyButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.ApplyButton.Location = new System.Drawing.Point(412, 88);
             this.ApplyButton.Name = "ApplyButton";
@@ -89,14 +91,16 @@
             this.AcceptButton = this.ApplyButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(505, 129);
+            this.ClientSize = new System.Drawing.Size(509, 129);
             this.Controls.Add(this.ErrorLabel);
             this.Controls.Add(this.RenamingLabel);
             this.Controls.Add(this.RenamingTextBox);
             this.Controls.Add(this.ApplyButton);
             this.Controls.Add(this.CancelButton_);
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(525, 168);
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(525, 168);
             this.Name = "FileRenamingForm";
             this.ShowIcon = false;
             this.Text = "Renommage de fichier";

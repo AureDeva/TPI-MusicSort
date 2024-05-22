@@ -3,16 +3,11 @@
 ///Date : 08.05.2024
 ///Description : Class listing the files of the selected folder
 
-using System;
+using MusicSort.Models;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using MusicSort.Models;
 
 namespace MusicSort.Views
 {

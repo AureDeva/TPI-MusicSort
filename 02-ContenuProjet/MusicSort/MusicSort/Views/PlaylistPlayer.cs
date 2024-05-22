@@ -3,17 +3,10 @@
 ///Date : 08.05.2024
 ///Description : Control used to play the musics of the playlist
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using AxWMPLib;
+using MusicSort.Models;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using MusicSort.Models;
-using AxWMPLib;
 
 namespace MusicSort.Views
 {
@@ -30,10 +23,10 @@ namespace MusicSort.Views
         /// <summary>
         /// File currently being played
         /// </summary>
-        public File CurrentlyPlayingFile 
-        { 
-            get 
-            { 
+        public File CurrentlyPlayingFile
+        {
+            get
+            {
                 //test if there are no files playing
                 if (_filesToPlay.Length == 0)
                     return null;
@@ -41,8 +34,8 @@ namespace MusicSort.Views
                 else if (_filesToPlay.Length == 1)
                     return _filesToPlay[0];
                 else
-                    return _filesToPlay.ToList().Find(f => f.GetListeningPath() == currentMedia.sourceURL); 
-            } 
+                    return _filesToPlay.ToList().Find(f => f.GetListeningPath() == currentMedia.sourceURL);
+            }
         }
 
         /// <summary>

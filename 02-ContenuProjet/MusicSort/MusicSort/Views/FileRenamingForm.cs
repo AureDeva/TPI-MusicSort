@@ -3,17 +3,11 @@
 ///Date : 08.05.2024
 ///Description : Form used to rename the files
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO;
 using MusicSort.Models;
+using System;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace MusicSort.Views
 {

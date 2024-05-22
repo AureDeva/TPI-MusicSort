@@ -3,16 +3,10 @@
 ///Date : 08.05.2024
 ///Description : Class listing the elements of the playlist
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using MusicSort.Models;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace MusicSort.Views
 {
@@ -49,7 +43,7 @@ namespace MusicSort.Views
             InitializeComponent();
 
             // PlaylistView
-            Location = new Point(0,0);
+            Location = new Point(0, 0);
             Name = "PlaylistView";
             Size = new Size(210, 350);
             UseCompatibleStateImageBehavior = false;

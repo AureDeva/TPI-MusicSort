@@ -3,16 +3,9 @@
 ///Date : 08.05.2024
 ///Description : Class representing the menu of an item of the playlist
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using MusicSort.Models;
+using System;
+using System.Windows.Forms;
 
 namespace MusicSort.Views
 {
@@ -36,7 +29,7 @@ namespace MusicSort.Views
         /// <param name="removeFromPlaylist">Method to trigger when wanting remove the file from the playlist</param>
         /// <param name="placeHigher">Method to trigger when wanting place the file higher in the order</param>
         /// <param name="placeLower">Method to trigger when wanting place the file lower in the order</param>
-        public PlaylistItemMenu(File file, DoActionHandler reset, DoActionHandler play, DoActionHandler rename, 
+        public PlaylistItemMenu(File file, DoActionHandler reset, DoActionHandler play, DoActionHandler rename,
             DoActionHandler removeFromPlaylist, DoActionHandler placeHigher, DoActionHandler placeLower)
         {
             InitializeComponent();

@@ -3,13 +3,11 @@
 ///Date : 08.05.2024
 ///Description : Controller of the processes of the application
 
+using MusicSort.Models;
+using MusicSort.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MusicSort.Models;
-using MusicSort.Views;
 using System.Windows.Forms;
 
 namespace MusicSort.Controllers
@@ -135,9 +133,21 @@ namespace MusicSort.Controllers
             //go through the files given
             foreach (File file in files)
             {
-                Model.Playlist.Add(file);
-                file.IndexInPlaylist = Model.Playlist.Count - 1;
-                View.applyButton.Enabled = true;
+                //test if the file isn't already in
+                if (!Model.Playlist.Exists(f => f.FullRealPath == file.FullRealPath))
+                {
+                    Model.Playlist.Add(file);
+                    file.IndexInPlaylist = Model.Playlist.Count - 1;
+                    View.applyButton.Enabled = true;
+
+                    //test if the path will change
+                    if (Model.ApplicationMode == ApplicationMode.RenameAndCopy || Model.ApplicationMode == ApplicationMode.RenameAndMove)
+                        file.SetNewPath(Model.DestinationPath);
+
+                    //test if the file should be a copy
+                    if (Model.ApplicationMode == ApplicationMode.RenameAndCopy)
+                        file.IsCopy = true;
+                }
             }
 
             View.SetFileItemsForPlaylistView(Model.Playlist.ToArray());
@@ -182,7 +192,7 @@ namespace MusicSort.Controllers
                 List<File> files_ = files.OrderBy(f => f.IndexInPlaylist).ToList();
 
                 //test if the highest file has room to go up
-                if (files_[0].IndexInPlaylist > 0) 
+                if (files_[0].IndexInPlaylist > 0)
                 {
                     //files moved by the other files moving
                     List<Tuple<File, int>> filesToDisplaceWithNewIndex = new List<Tuple<File, int>>();
@@ -323,6 +333,8 @@ namespace MusicSort.Controllers
                 file.SetNewName(file.RealName);
                 file.SetNewPrefix("");
                 file.SetNewPath(file.RealPath);
+                ChangeApplicationMode(ApplicationMode.Rename);
+                View.renameModeRadioButton.Checked = true;
                 Model.SortFiles();
                 View.PlaylistView.Sort();
             }
@@ -421,9 +433,9 @@ namespace MusicSort.Controllers
             Model.SetNewMode(mode);
         }
 
-         /// <summary>
-         /// Applies all changes to the real files
-         /// </summary>
+        /// <summary>
+        /// Applies all changes to the real files
+        /// </summary>
         public void Apply()
         {
             //test if in the case of a copy or move, the user has selected a destination
@@ -475,6 +487,9 @@ namespace MusicSort.Controllers
                                     View.SendErrorMessage("Erreur", $"Une erreur s'est produite lors de l'application des changements sur le fichier : \n {file.RealPath}");
                             }
                         }
+
+                        Model.SetNewDestination("");
+                        View.destinationTextBox.Text = "";
 
                         View.SetFileItemsForFolderListView(Model.GetFilesFromDirectory(Model.SelectedPath));
                     }

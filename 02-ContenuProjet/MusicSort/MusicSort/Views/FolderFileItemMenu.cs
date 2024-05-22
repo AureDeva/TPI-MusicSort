@@ -3,16 +3,9 @@
 ///Date : 08.05.2024
 ///Description : Class representing the menu of an item of the FolderFileList
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using MusicSort.Models;
+using System;
+using System.Windows.Forms;
 
 namespace MusicSort.Views
 {

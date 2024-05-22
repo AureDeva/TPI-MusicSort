@@ -3,15 +3,11 @@
 ///Date : 08.05.2024
 ///Description : Class managing the information of a file
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using NAudio.Wave;
-using System.Diagnostics;
 using NAudio.Lame;
+using NAudio.Wave;
+using System;
+using System.IO;
+using System.Linq;
 
 namespace MusicSort.Models
 {
@@ -28,7 +24,7 @@ namespace MusicSort.Models
         /// <summary>
         /// Separator of the prefix and the name
         /// </summary>
-        private static  readonly char _prefixSeparator = ' ';
+        private static readonly char _prefixSeparator = ' ';
 
         /// <summary>
         /// Consctructs the static parts of the class
@@ -213,7 +209,7 @@ namespace MusicSort.Models
         {
             //verify validity
             //test the name is valid
-            if(!name.Any(c => Path.GetInvalidFileNameChars().Contains(c)) || name.Length <= 255)
+            if (!name.Any(c => Path.GetInvalidFileNameChars().Contains(c)) || name.Length <= 255)
             {
                 //test if the name would still be unique
                 if (!System.IO.File.Exists(CustomPath + '\\' + name + '.' + RealExtension) && name != CustomName || name == RealName && CustomName != RealName)
@@ -254,7 +250,7 @@ namespace MusicSort.Models
         {
             try
             {
-                //test if the name is different than the last one
+                //test if the name is the same as the last one
                 if (FullCustomName == FullRealPath)
                     return true;
 
@@ -264,13 +260,18 @@ namespace MusicSort.Models
                     //test if a file doesn't already exist with the same name 
                     if (!System.IO.File.Exists(FullCustomName))
                     {
-                        //test if the file should be renamed
-                        if (!IsCopy)
-                            System.IO.File.Move(FullRealPath, FullCustomName);
-                        else
+                        //test if the file should be copied
+                        if (IsCopy)
                             System.IO.File.Copy(FullRealPath, FullCustomName);
+                        else
+                            System.IO.File.Move(FullRealPath, FullCustomName);
 
                         FullRealPath = FullCustomName;
+                        CustomName = RealName;
+                        CustomPath = RealPath;
+                        Prefix = "";
+                        TempFilePath = "";
+                        FileInfoChangedEvent?.Invoke(this);
 
                         return true;
                     }
@@ -281,13 +282,18 @@ namespace MusicSort.Models
                         {
                             System.IO.File.Delete(FullCustomName);
 
-                            //test if the file should be renamed
-                            if (!IsCopy)
-                                System.IO.File.Move(FullRealPath, FullCustomName);
-                            else
+                            //test if the file should be copied
+                            if (IsCopy)
                                 System.IO.File.Copy(FullRealPath, FullCustomName);
+                            else
+                                System.IO.File.Move(FullRealPath, FullCustomName);
 
                             FullRealPath = FullCustomName;
+                            CustomName = RealName;
+                            CustomPath = RealPath;
+                            Prefix = "";
+                            TempFilePath = "";
+                            FileInfoChangedEvent?.Invoke(this);
 
                             return true;
                         }
@@ -302,6 +308,7 @@ namespace MusicSort.Models
             }
             catch (FileNotFoundException)
             {
+                
                 return false;
             }
         }

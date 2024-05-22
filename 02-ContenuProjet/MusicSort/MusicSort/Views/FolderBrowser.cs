@@ -3,17 +3,13 @@
 ///Date : 08.05.2024
 ///Description : Class used to brows the folders for selection
 
+using MusicSort.Properties;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.IO;
-using MusicSort.Properties;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace MusicSort.Views
 {
@@ -49,6 +45,7 @@ namespace MusicSort.Views
             Location = new Point(27, 76);
             Size = new Size(207, 268);
 
+            //create the list of icons for the nodes
             ImageList = new ImageList();
             ImageList.Images.Add("SelectedDrive", Resources.SelectedDriveIcon);
             ImageList.Images.Add("OpenFolder", Resources.OpenFolderIcon);
@@ -81,7 +78,7 @@ namespace MusicSort.Views
                     e.Node.Collapse();
                 else
                     e.Node.Expand();
-                
+
                 SelectNode(e.Node);
                 FolderSelectedEvent?.Invoke(sender, (string)e.Node.Tag);
             }
@@ -96,12 +93,13 @@ namespace MusicSort.Views
             //test if no base was provided or if the base is a root device
             if (path == "" || (Path.IsPathRooted(path) && Directory.GetParent(path) == null))
             {
-                //clean the view
+                //clean the nodes
                 Nodes.Clear();
 
                 //add the root directories
                 try
                 {
+                    //get the drives of the PC and add them as base nodes
                     Directory.GetLogicalDrives().ToList().ForEach(d =>
                     {
                         Nodes.Add(new TreeNode()
@@ -120,6 +118,7 @@ namespace MusicSort.Views
                 }
                 catch (UnauthorizedAccessException)
                 {
+                    //test if the parent is a viewform and send an error to the user if yes
                     if (Parent is ViewForm)
                         ((ViewForm)Parent).SendErrorMessage("Erreur", "Action non autorisée !");
 
@@ -129,7 +128,7 @@ namespace MusicSort.Views
             //test if the directory exists
             else if (Path.IsPathRooted(path))
             {
-                //clean the view
+                //clean the nodes
                 Nodes.Clear();
 
                 //create base node
@@ -142,8 +141,10 @@ namespace MusicSort.Views
                     Tag = path
                 };
 
+                //add the children to the node
                 baseNode.Nodes.AddRange(GetNodeChildren(path));
 
+                //add the node to the base nodes
                 Nodes.Add(baseNode);
 
                 BaseDirectory = path;
@@ -167,6 +168,7 @@ namespace MusicSort.Views
                 List<TreeNode> nodes = new List<TreeNode>();
                 try
                 {
+                    //get the files as nodes contained in the directory given
                     foreach (string directory in Directory.GetDirectories(path))
                         nodes.Add(new TreeNode()
                         {
@@ -177,8 +179,9 @@ namespace MusicSort.Views
                             Tag = directory
                         });
                 }
-                catch(UnauthorizedAccessException)
+                catch (UnauthorizedAccessException)
                 {
+                    //test if the parent is a viewform and send an error to the user if yes
                     if (Parent is ViewForm)
                         ((ViewForm)Parent).SendErrorMessage("Erreur", "Action non autorisée !");
                 }

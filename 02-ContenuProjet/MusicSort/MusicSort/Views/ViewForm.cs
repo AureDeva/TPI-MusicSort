@@ -3,17 +3,11 @@
 ///Date : 08.05.2024
 ///Description : Class representing the main interface
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using MusicSort.Controllers;
 using MusicSort.Models;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace MusicSort.Views
 {
@@ -66,8 +60,11 @@ namespace MusicSort.Views
             //set up the music player
             MusicPlayer = new PlaylistPlayer();
             Controls.Add(MusicPlayer);
-            MusicPlayer.OcxState = ((System.Windows.Forms.AxHost.State)(new System.ComponentModel.ComponentResourceManager(typeof(ViewForm)).GetObject("MusicPlayer.OcxState")));
+            MusicPlayer.OcxState = ((AxHost.State)(new System.ComponentModel.ComponentResourceManager(typeof(ViewForm)).GetObject("MusicPlayer.OcxState")));
             MusicPlayer.MediaChange += MusicPlayer_MediaChange;
+            MusicPlayer.Location = new System.Drawing.Point(36, 492);
+            MusicPlayer.Size = new System.Drawing.Size(766, 45);
+            MusicPlayer.Margin = new Padding(3);
 
 
             //create the toolTip
@@ -94,7 +91,7 @@ namespace MusicSort.Views
             toolTip.SetToolTip(generalNameTextBox, "Donne un nom général à tous les fichiers de la playlist.");
             toolTip.SetToolTip(startNumberTextBox, "Premier numéro utilisé dans la numérotation (garde en mémoire le nombre chiffres).");
             toolTip.SetToolTip(_fileNumberingCheckBox, "Active ou désactive la numérotation des fichiers de la playlist (nécessaire pour le nom général).");
-            toolTip.SetToolTip(_renameModeRadioButton, "Mode qui, lors de l'application, renomme les fichiers originaux selon les noms donnés.");
+            toolTip.SetToolTip(renameModeRadioButton, "Mode qui, lors de l'application, renomme les fichiers originaux selon les noms donnés.");
             toolTip.SetToolTip(_renameAndCopyModeRadioButton, "Mode qui, lors de l'application, copie et renomme les fichiers originaux selon les noms et la destination donnés.");
             toolTip.SetToolTip(_renameAndMoveModeRadioButton, "Mode qui, lors de l'application, déplace et renomme les fichiers originaux selon les noms et la destination donnés.");
             toolTip.SetToolTip(_destinationButton, "Choix du dossier de destination.");
@@ -136,7 +133,7 @@ namespace MusicSort.Views
         /// <param name="e">arguments of the event</param>
         private void PlaylistView_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
-            selectedFileLabel.Text = ((FileItem)e.Item).File.DisplayName;
+            selectedFileLabel.Text = ((FileItem)e.Item).File.RealPath.Substring(((FileItem)e.Item).File.RealPath.LastIndexOf('\\'));
         }
 
         /// <summary>
@@ -192,7 +189,7 @@ namespace MusicSort.Views
         /// Add new FileItems to the playlist
         /// </summary>
         /// <param name="files">files to add as items</param>
-        public void SetFileItemsForPlaylistView(File[] files) 
+        public void SetFileItemsForPlaylistView(File[] files)
         {
             //items to set for the playlist view
             List<FileItem> fileItemsToRemove = new List<FileItem>();

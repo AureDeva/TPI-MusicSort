@@ -3,13 +3,8 @@
 ///Date : 08.05.2024
 ///Description : Class representing an item of the lists of files
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using MusicSort.Models;
+using System.Windows.Forms;
 
 namespace MusicSort.Views
 {
