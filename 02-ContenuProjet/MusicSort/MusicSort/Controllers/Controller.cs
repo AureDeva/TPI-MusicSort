@@ -492,6 +492,9 @@ namespace MusicSort.Controllers
                         View.destinationTextBox.Text = "";
 
                         View.SetFileItemsForFolderListView(Model.GetFilesFromDirectory(Model.SelectedPath));
+
+                        //inform the user of the end
+                        View.InformUser("Information", "Application terminée.");
                     }
                 }
             }
