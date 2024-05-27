@@ -135,11 +135,6 @@ namespace MusicSort.Views
         private class PlaylistItemComparer : System.Collections.IComparer
         {
             /// <summary>
-            /// Tells what order should thing be sorted
-            /// </summary>
-            public bool IsSortingAscending { get; set; } = true;
-
-            /// <summary>
             /// Comparation method
             /// </summary>
             /// <param name="x">first value to compare</param>

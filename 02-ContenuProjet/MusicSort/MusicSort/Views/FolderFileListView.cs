@@ -103,47 +103,5 @@ namespace MusicSort.Views
                 }
             }
         }
-
-        /// <summary>
-        /// Sets the new fileItems of the folder
-        /// </summary>
-        /// <param name="items">new fileItems to set</param>
-        public void SetNewFileItems(FileItem[] items)
-        {
-            //add items that should be added
-            foreach (FileItem item in items)
-                //test if the item isn't present in the list
-                if (!Items.Contains(item))
-                    Items.Add(item);
-
-            //remove items that should be removed
-            foreach (FileItem item in Items)
-                //test if the item isn't present in the array given
-                if (!items.Contains(item))
-                    Items.Remove(item);
-
-            Refresh();
-        }
-
-        /// <summary>
-        /// Gets the fileitems corresponding to the files given
-        /// </summary>
-        /// <param name="files">Files to find to fileitems corresponding to</param>
-        /// <returns>returns the fileitems found</returns>
-        public FileItem[] GetFileItemsFromFiles(File[] files)
-        {
-            //list of items to returns
-            List<FileItem> items = new List<FileItem>();
-
-            //go through the files
-            foreach (File file in files)
-                //go through the items
-                foreach (FileItem item in Items)
-                    //test if it is the right item
-                    if (item.File == file)
-                        items.Add(item);
-
-            return items.ToArray();
-        }
     }
 }
